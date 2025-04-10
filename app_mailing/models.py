@@ -1,8 +1,8 @@
 from django.db import models
 
 
-class MailingRecipient(models.Model):
-    """Модель *MailingRecipient* представляет "Получателя рассылки" в сервисе управления рассылками."""
+class Recipient(models.Model):
+    """Модель *Recipient* представляет "Получателя рассылки" в сервисе управления рассылками."""
 
     email = models.EmailField(
         unique=True,
@@ -33,7 +33,7 @@ class MailingRecipient(models.Model):
         verbose_name = "Получатель"
         verbose_name_plural = "Получатели"
         ordering = ["email"]
-        db_table = "tb_mailing_recipient"
+        db_table = "tb_recipient"
 
 
 class Message(models.Model):
@@ -107,8 +107,8 @@ class Mailing(models.Model):
         verbose_name="Сообщение для рассылки:",
         help_text="Укажите сообщение для рассылки",
     )
-    mailing_recipients = models.ManyToManyField(
-        to=MailingRecipient,
+    recipients = models.ManyToManyField(
+        to=Recipient,
         blank=True,  # В Django null=True для ManyToManyField не используется. Django его игнорирует.
         related_name="mailings",  # "recipient.mailings.all()" - все рассылки, в которых участвует данный получатель.
         verbose_name="Получатели для рассылки:",
