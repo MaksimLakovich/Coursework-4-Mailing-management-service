@@ -10,6 +10,7 @@
 [8. Установка проекта](#title8) / 
 [9. Получение ключей .env](#title9) / 
 [10. Описание файла .flake8](#title10) / 
+[11. Описание файла mypy.ini](#title11) / 
 
 
 
@@ -44,7 +45,7 @@
 
 
 
-# <a id="title2">2. Описание моделей (models)</a>
+# <a id="title3">3. Описание моделей (models)</a>
 
 ## _Приложение "app_mailing" (app_mailing/models.py):_
 
@@ -74,16 +75,20 @@
 
 
 
-# <a id="title3">3. Описание админок (admin)</a>
+# <a id="title4">4. Описание админок (admin)</a>
 
 ## _Приложение "app_mailing" (app_mailing/admin.py):_
 
-1) Админка `CourseAdmin(admin.ModelAdmin)` - отображение данных модели Курса (Course) в админке.
+1) Админка `RecipientAdmin(admin.ModelAdmin)` - отображение данных "Получатель рассылки" в админке (модель *Recipient*).
+
+2) Админка `MessageAdmin(admin.ModelAdmin)` - отображение данных "Сообщение рассылки" в админке (модель *Message*).
+
+3) Админка `MailingAdmin(admin.ModelAdmin)` - отображение данных "Рассылка" в админке (модель *Mailing*).
 
 
 
 
-# <a id="title4">4. Описание контроллеров (views)</a>
+# <a id="title5">5. Описание контроллеров (views)</a>
 
 ## _Приложение "app_mailing" (app_mailing/views.py):_
 
