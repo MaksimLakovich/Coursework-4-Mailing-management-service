@@ -1,0 +1,182 @@
+[
+  {
+    "model": "app_mailing.recipient",
+    "pk": 1,
+    "fields": {
+      "full_name": "Иванов Иван Иванович",
+      "email": "ivanov@gmail.com",
+      "comment": "Проверить активность перед рассылкой"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 2,
+    "fields": {
+      "full_name": "Петров Пётр Петрович",
+      "email": "petrov@yandex.ru",
+      "comment": "VIP клиент"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 3,
+    "fields": {
+      "full_name": "Сидорова Мария Алексеевна",
+      "email": "sidorova@gmail.com",
+      "comment": "Предпочитает утренние рассылки"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 4,
+    "fields": {
+      "full_name": "Кузнецов Алексей Сергеевич",
+      "email": "kuznetsov@yandex.ru",
+      "comment": ""
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 5,
+    "fields": {
+      "full_name": "Морозова Анна Владимировна",
+      "email": "morozova@gmail.com",
+      "comment": "Не беспокоить по выходным"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 6,
+    "fields": {
+      "full_name": "Васильев Дмитрий Николаевич",
+      "email": "vasilev@yandex.ru",
+      "comment": "Тестовая рассылка"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 7,
+    "fields": {
+      "full_name": "Федорова Елена Игоревна",
+      "email": "fedorova@gmail.com",
+      "comment": "Уточнить предпочтения"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 8,
+    "fields": {
+      "full_name": "Ковалев Сергей Иванович",
+      "email": "kovalev@yandex.ru",
+      "comment": ""
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 9,
+    "fields": {
+      "full_name": "Громова Ольга Петровна",
+      "email": "gromova@gmail.com",
+      "comment": "Новичок в списке"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 10,
+    "fields": {
+      "full_name": "Егоров Артём Валерьевич",
+      "email": "egorov@yandex.ru",
+      "comment": "Важно вовремя доставить"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 11,
+    "fields": {
+      "full_name": "Лебедева Татьяна Сергеевна",
+      "email": "lebedeva@gmail.com",
+      "comment": ""
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 12,
+    "fields": {
+      "full_name": "Макаров Игорь Евгеньевич",
+      "email": "makarov@yandex.ru",
+      "comment": "Обратная связь важна"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 13,
+    "fields": {
+      "full_name": "Захарова Виктория Никитична",
+      "email": "zaharova@gmail.com",
+      "comment": "Согласна на тестирование"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 14,
+    "fields": {
+      "full_name": "Романов Василий Артемович",
+      "email": "romanov@yandex.ru",
+      "comment": "Подписан на две рассылки"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 15,
+    "fields": {
+      "full_name": "Алексеева Алёна Васильевна",
+      "email": "alekseeva@gmail.com",
+      "comment": ""
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 16,
+    "fields": {
+      "full_name": "Григорьев Денис Павлович",
+      "email": "grigoriev@yandex.ru",
+      "comment": "Быстро отвечает"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 17,
+    "fields": {
+      "full_name": "Тихонова Наталья Ильинична",
+      "email": "tikhonova@gmail.com",
+      "comment": ""
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 18,
+    "fields": {
+      "full_name": "Шестаков Андрей Константинович",
+      "email": "shestakov@yandex.ru",
+      "comment": "Активный пользователь"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 19,
+    "fields": {
+      "full_name": "Жукова Людмила Георгиевна",
+      "email": "zhukova@gmail.com",
+      "comment": "Тестирует бета-версии"
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 20,
+    "fields": {
+      "full_name": "Орлов Николай Тимофеевич",
+      "email": "orlov@yandex.ru",
+      "comment": ""
+    }
+  }
+]

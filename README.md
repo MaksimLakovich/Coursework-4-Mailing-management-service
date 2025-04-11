@@ -11,6 +11,7 @@
 [9. Получение ключей .env](#title9) / 
 [10. Описание файла .flake8](#title10) / 
 [11. Описание файла mypy.ini](#title11) / 
+[12. Описание директории Data](#title12) / 
 
 
 
@@ -92,13 +93,13 @@
 
 ## _Приложение "app_mailing" (app_mailing/views.py):_
 
-1) Класс-контроллер `CourseViewSet(viewsets.ModelViewSet)` - автоматический CRUD для модели Course.
-   - на основе ***ModelViewSet*** - это компонент Django REST для эффективного управления API-ресурсами и уменьшения объема кода.
+1) Класс-контроллер `RecipientListView(generic.ListView)` - представление для отображения страницы *recipient_list.html* со списком Получателей рассылки.
 
-    
+
 
 
 # <a id="title8">8. Установка проекта</a>
+
 1. Клонируйте репозиторий:
    ```
    git clone https://github.com/MaksimLakovich/Coursework-4-Mailing-management-service.git
@@ -113,6 +114,7 @@
 
 
 # <a id="title9">9. Получение ключей. Описание файла .env.example</a> 
+
 1. Создайте файл .env в корне проекта из копии подготовленного файла `.env.example`, в котором описаны названия всех переменных, необходимых для работы приложения.
 2. Замените значения переменных реальными данными.
 3. В модуле `settings.py` существует секретный ключ `SECRET_KEY`, который рекомендуется в целях безопасности хранить в тайне:
@@ -138,6 +140,7 @@ DATABASE_PORT=
 
 
 # <a id="title10">10. Описание файла .flake8</a> 
+
 ```ini
 [flake8]
 max-line-length = 119
@@ -149,7 +152,16 @@ exclude = .git, __pycache__, venv, .venv
 
 
 # <a id="title11">11. Описание файла mypy.ini</a> 
+
 ```ini
 [mypy]
 ignore_missing_imports = True
 ```
+
+
+
+
+# <a id="title12">12. Описание директории data/</a> 
+
+- Папка ***data/fixtures/***:
+  - файл `add_recipients.json` - фикстура с тестовыми получателями рассылок.
