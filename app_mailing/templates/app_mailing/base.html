@@ -1,0 +1,69 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}MailForge{% endblock %}</title>
+
+    <!-- Подключение статичеcких файлов со стилями Bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        /* СДЕЛАТЬ ЖИРНЫМ ШРИФТ в названии полей на формах из FORMS.PY */
+        form p label {
+            font-weight: bold;
+            }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- Подключение подшаблона с меню (верхняя часть с навигацией) -->
+{% include 'app_mailing/menu.html' %}
+
+<!-- Подключение основного контента страницы -->
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<!--Нижняя часть с футером (подвал)-->
+<footer>
+    <div class="container border-top pt-4 my-md-5 pt-md-5 border-top">
+        <div class="row">
+            <div class="col-12 col-md">
+                MailForge
+                <small class="d-block mb-3 text-muted">&copy; 2025</small>
+            </div>
+            <div class="col-6 col-md">
+                <h5>Категории</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="#">Телеграм боты</a></li>
+                    <li><a class="text-muted" href="#">Полезные утилиты</a></li>
+                    <li><a class="text-muted" href="#">Микросервисы</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md">
+                <h5>Дополнительно</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="#">Мы пишем</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md">
+                <h5>О нас</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="#">Контакты</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Подключение статичеcких файлов со скриптами Bootstrap -->
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+</body>
+
+</html>
