@@ -94,16 +94,15 @@ class MessageUpdateView(generic.UpdateView):
         return super().form_valid(form)
 
 
-# class RecipientDeleteView(generic.DeleteView):
-#     """Представление для удаления Получателя рассылки."""
-#
-#     model = Recipient
-#     template_name = "app_mailing/recipient_delete.html"
-#     context_object_name = "recipient"
-#     success_url = reverse_lazy("app_mailing:recipient_list_page")
-#
-#     def form_valid(self, form):
-#         """Отправка пользователю уведомления об успешном удалении Получателя из списка рассылки."""
-#         recipient = self.get_object()
-#         messages.success(self.request, f"Вы удалили клиента: {recipient.email}")
-#         return super().form_valid(form)
+class MessageDeleteView(generic.DeleteView):
+    """Представление для удаления Сообщения рассылки."""
+
+    model = Message
+    template_name = "app_mailing/message_delete.html"
+    context_object_name = "app_message"
+    success_url = reverse_lazy("app_mailing:message_list_page")
+
+    def form_valid(self, form):
+        """Отправка пользователю уведомления об успешном удалении Сообщения из списка рассылки."""
+        messages.success(self.request, "Вы удалили сообщение")
+        return super().form_valid(form)
