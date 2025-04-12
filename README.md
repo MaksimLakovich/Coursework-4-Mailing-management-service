@@ -124,7 +124,8 @@
 
 2) Класс-контроллер `RecipientCreateView(generic.CreateView)` - представление для добавления нового Получателя рассылки.
    - ***Кастомизация контроллера***:
-     - form_class = AddNewRecipientForm
+     - form_class = AddNewRecipientForm.
+     - `def form_valid(self, form)` - метод отправка пользователю уведомления об успешном добавлении нового Получателя.
 
 3) Класс-контроллер `RecipientUpdateView(generic.UpdateView)` - представление для редактирования существующего Получателя рассылки.
    - ***Кастомизация контроллера***:
