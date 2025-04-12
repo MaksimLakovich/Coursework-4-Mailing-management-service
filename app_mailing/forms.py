@@ -4,7 +4,7 @@ from app_mailing.models import Recipient
 
 
 class AddNewRecipientForm(forms.ModelForm):
-    """Форма для добавления пользователем нового Получателя рассылки на странице recipient_form_add_new.html"""
+    """Форма для добавления пользователем нового Получателя рассылки на странице recipient_add_update.html"""
 
     class Meta:
         model = Recipient

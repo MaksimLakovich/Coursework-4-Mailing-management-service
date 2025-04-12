@@ -12,7 +12,7 @@
 
 <!-- Кнопка добавления -->
 <div class="d-flex justify-content-end mb-4">
-    <a href="{% url 'app_mailing:recipient_form_add_page' %}" class="btn btn-success shadow-sm">
+    <a href="{% url 'app_mailing:recipient_add_page' %}" class="btn btn-success shadow-sm">
         <i class="fas fa-plus me-2"></i>Добавить получателя
     </a>
 </div>
@@ -37,7 +37,7 @@
                 <td>{{ recipient.email }}</td>
                 <td>{{ recipient.comment|default:"—" }}</td>
                 <td class="text-center">
-                    <a href="#" class="btn btn-sm btn-warning me-1">
+                    <a href="{% url 'app_mailing:recipient_update_page' recipient.pk %}" class="btn btn-sm btn-warning me-1">
                         <i class="fas fa-edit"></i>
                     </a>
                     <a href="#" class="btn btn-sm btn-danger">

@@ -14,12 +14,12 @@ class RecipientListView(generic.ListView):
 
 
 class RecipientCreateView(generic.CreateView):
-    """Представление для отображения страницы *recipient_form_add_new.html* с добавлением
+    """Представление для отображения страницы *recipient_add_update.html* с добавлением
     в список нового Получателя рассылки."""
 
     model = Recipient
     form_class = AddNewRecipientForm
-    template_name = "app_mailing/recipient_form_add_new.html"
+    template_name = "app_mailing/recipient_add_update.html"
     success_url = reverse_lazy("app_mailing:recipient_list_page")
 
 
@@ -30,9 +30,13 @@ class RecipientDetailView(generic.DetailView):
 
 
 class RecipientUpdateView(generic.UpdateView):
-    """."""
+    """Представление для отображения страницы *recipient_add_update.html* с возможностью редактирования
+    Получателя рассылки из существующего списка."""
 
-    pass
+    model = Recipient
+    form_class = AddNewRecipientForm
+    template_name = "app_mailing/recipient_add_update.html"
+    success_url = reverse_lazy("app_mailing:recipient_list_page")
 
 
 class RecipientDeleteView(generic.DeleteView):
