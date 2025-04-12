@@ -6,7 +6,7 @@ from app_mailing.models import Recipient
 
 
 class RecipientListView(generic.ListView):
-    """Представление для отображения страницы *recipient_list.html* со списком Получателей рассылки."""
+    """Представление для отображения списка Получателей рассылки."""
 
     model = Recipient
     template_name = "app_mailing/recipient_list.html"
@@ -14,8 +14,7 @@ class RecipientListView(generic.ListView):
 
 
 class RecipientCreateView(generic.CreateView):
-    """Представление для отображения страницы *recipient_add_update.html* с добавлением
-    в список нового Получателя рассылки."""
+    """Представление для добавления нового Получателя рассылки."""
 
     model = Recipient
     form_class = AddNewRecipientForm
@@ -23,15 +22,8 @@ class RecipientCreateView(generic.CreateView):
     success_url = reverse_lazy("app_mailing:recipient_list_page")
 
 
-class RecipientDetailView(generic.DetailView):
-    """."""
-
-    pass
-
-
 class RecipientUpdateView(generic.UpdateView):
-    """Представление для отображения страницы *recipient_add_update.html* с возможностью редактирования
-    Получателя рассылки из существующего списка."""
+    """Представление для редактирования существующего Получателя рассылки."""
 
     model = Recipient
     form_class = AddNewRecipientForm
@@ -40,9 +32,14 @@ class RecipientUpdateView(generic.UpdateView):
 
 
 class RecipientDeleteView(generic.DeleteView):
-    """."""
+    """Представление для удаления Получателя рассылки."""
 
-    pass
+    model = Recipient
+    template_name = "app_mailing/recipient_delete.html"
+    context_object_name = "recipient"
+    success_url = reverse_lazy("app_mailing:recipient_list_page")
+
+
 
 
 # @method_decorator(cache_page(60 * 15), name="dispatch")  # Декоратор для создания кеша для всей страницы
