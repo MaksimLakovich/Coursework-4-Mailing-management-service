@@ -1,5 +1,7 @@
+from django.urls import reverse_lazy
 from django.views import generic
 
+from app_mailing.forms import AddNewRecipientForm
 from app_mailing.models import Recipient
 
 
@@ -12,9 +14,13 @@ class RecipientListView(generic.ListView):
 
 
 class RecipientCreateView(generic.CreateView):
-    """."""
+    """Представление для отображения страницы *recipient_form_add_new.html* с добавлением
+    в список нового Получателя рассылки."""
 
-    pass
+    model = Recipient
+    form_class = AddNewRecipientForm
+    template_name = "app_mailing/recipient_form_add_new.html"
+    success_url = reverse_lazy("app_mailing:recipient_list_page")
 
 
 class RecipientDetailView(generic.DetailView):
