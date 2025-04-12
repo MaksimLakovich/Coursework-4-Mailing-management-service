@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from django.views import generic
 
-from app_mailing.forms import AddNewRecipientForm
+from app_mailing.forms import AddNewRecipientForm, AddNewMessageForm
 from app_mailing.models import Recipient, Message
 
 
@@ -66,18 +66,18 @@ class MessageListView(generic.ListView):
     context_object_name = "app_messages"
 
 
-# class MessageCreateView(generic.CreateView):
-#     """Представление для добавления нового Сообщения рассылки."""
-#
-#     model = Message
-#     form_class = AddNewMessageForm
-#     template_name = "app_mailing/message_add_update.html"
-#     success_url = reverse_lazy("app_mailing:message_list_page")
-#
-#     def form_valid(self, form):
-#         """Отправка пользователю уведомления об успешном добавлении нового Получателя в список рассылки."""
-#         messages.success(self.request, "Новый получатель успешно добавлен.")
-#         return super().form_valid(form)
+class MessageCreateView(generic.CreateView):
+    """Представление для добавления нового Сообщения рассылки в список."""
+
+    model = Message
+    form_class = AddNewMessageForm
+    template_name = "app_mailing/message_add_update.html"
+    success_url = reverse_lazy("app_mailing:message_list_page")
+
+    def form_valid(self, form):
+        """Отправка пользователю уведомления об успешном добавлении нового Сообщения в список рассылки."""
+        messages.success(self.request, "Новое сообщение успешно добавлено.")
+        return super().form_valid(form)
 
 
 # class RecipientUpdateView(generic.UpdateView):
