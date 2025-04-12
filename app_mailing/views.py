@@ -80,21 +80,20 @@ class MessageCreateView(generic.CreateView):
         return super().form_valid(form)
 
 
-# class RecipientUpdateView(generic.UpdateView):
-#     """Представление для редактирования существующего Получателя рассылки."""
-#
-#     model = Recipient
-#     form_class = AddNewRecipientForm
-#     template_name = "app_mailing/recipient_add_update.html"
-#     success_url = reverse_lazy("app_mailing:recipient_list_page")
-#
-#     def form_valid(self, form):
-#         """Отправка пользователю уведомления об успешном редактировании данных Получателя из списка рассылки."""
-#         recipient = self.get_object()
-#         messages.success(self.request, f"Вы успешно обновили данные клиента: {recipient.email}")
-#         return super().form_valid(form)
-#
-#
+class MessageUpdateView(generic.UpdateView):
+    """Представление для редактирования существующего Сообщения рассылки."""
+
+    model = Message
+    form_class = AddNewMessageForm
+    template_name = "app_mailing/message_add_update.html"
+    success_url = reverse_lazy("app_mailing:message_list_page")
+
+    def form_valid(self, form):
+        """Отправка пользователю уведомления об успешном редактировании данных Сообщения из списка рассылки."""
+        messages.success(self.request, "Вы успешно обновили данные сообщения")
+        return super().form_valid(form)
+
+
 # class RecipientDeleteView(generic.DeleteView):
 #     """Представление для удаления Получателя рассылки."""
 #
