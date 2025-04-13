@@ -27,7 +27,7 @@ class RecipientCreateView(generic.CreateView):
 
     def form_valid(self, form):
         """Отправка пользователю уведомления об успешном добавлении нового Получателя в список рассылки."""
-        messages.success(self.request, "Новый получатель успешно добавлен.")
+        messages.success(self.request, "Новый получатель успешно добавлен")
         return super().form_valid(form)
 
 
@@ -82,7 +82,7 @@ class MessageCreateView(generic.CreateView):
 
     def form_valid(self, form):
         """Отправка пользователю уведомления об успешном добавлении нового Сообщения в список рассылки."""
-        messages.success(self.request, "Новое сообщение успешно добавлено.")
+        messages.success(self.request, "Новое сообщение успешно добавлено")
         return super().form_valid(form)
 
 
@@ -135,5 +135,33 @@ class MailingCreateView(generic.CreateView):
 
     def form_valid(self, form):
         """Отправка пользователю уведомления об успешном добавлении новой Рассылки в список."""
-        messages.success(self.request, "Новая рассылка успешно добавлена.")
+        messages.success(self.request, "Новая рассылка успешно добавлена")
+        return super().form_valid(form)
+
+
+class MailingUpdateView(generic.UpdateView):
+    """Представление для редактирования существующей Рассылки в списке."""
+
+    model = Mailing
+    form_class = AddNewMailingForm
+    template_name = "app_mailing/mailing/mailing_add_update.html"
+    success_url = reverse_lazy("app_mailing:mailing_list_page")
+
+    def form_valid(self, form):
+        """Отправка пользователю уведомления об успешном редактировании данных Рассылки из списка."""
+        messages.success(self.request, "Вы успешно обновили данные рассылки")
+        return super().form_valid(form)
+
+
+class MailingDeleteView(generic.DeleteView):
+    """Представление для удаления Рассылки."""
+
+    model = Mailing
+    template_name = "app_mailing/mailing/mailing_delete.html"
+    context_object_name = "mailing"
+    success_url = reverse_lazy("app_mailing:mailing_list_page")
+
+    def form_valid(self, form):
+        """Отправка пользователю уведомления об успешном удалении Рассылки."""
+        messages.success(self.request, "Вы удалили рассылку")
         return super().form_valid(form)
