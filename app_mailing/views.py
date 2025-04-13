@@ -3,7 +3,10 @@ from django.urls import reverse_lazy
 from django.views import generic
 
 from app_mailing.forms import AddNewRecipientForm, AddNewMessageForm
-from app_mailing.models import Recipient, Message
+from app_mailing.models import Recipient, Message, Mailing
+
+
+# 1. Контроллеры для "Управление клиентами"
 
 
 class RecipientListView(generic.ListView):
@@ -58,6 +61,9 @@ class RecipientDeleteView(generic.DeleteView):
         return super().form_valid(form)
 
 
+# 2. Контроллеры для "Управление сообщениями"
+
+
 class MessageListView(generic.ListView):
     """Представление для отображения списка Сообщений для рассылок."""
 
@@ -106,3 +112,14 @@ class MessageDeleteView(generic.DeleteView):
         """Отправка пользователю уведомления об успешном удалении Сообщения из списка рассылки."""
         messages.success(self.request, "Вы удалили сообщение")
         return super().form_valid(form)
+
+
+# 3. Контроллеры для "Управление рассылками"
+
+
+class MailingListView(generic.ListView):
+    """Представление для отображения списка Рассылок."""
+
+    model = Mailing
+    template_name = "app_mailing/mailing_list.html"
+    context_object_name = "mailings"
