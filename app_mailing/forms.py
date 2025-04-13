@@ -1,6 +1,6 @@
 from django import forms
 
-from app_mailing.models import Recipient, Message
+from app_mailing.models import Recipient, Message, Mailing
 
 
 class AddNewRecipientForm(forms.ModelForm):
@@ -21,7 +21,6 @@ class AddNewRecipientForm(forms.ModelForm):
             - Добавляем CSS-классы ко всем полям формы.
             - Убираем параметр 'help_text' со всех полей, чтоб этого больше не было по умолчанию на html-странице."""
         super().__init__(*args, **kwargs)
-
         # ШАГ 1: Убираю отображение help_text на странице, так как help_text из model.py дублирует то, что мы
         # добавили в forms.ModelForm (параметры "placeholder" в widgets).
         for field_name, field in self.fields.items():
@@ -51,14 +50,47 @@ class AddNewMessageForm(forms.ModelForm):
             - Добавляем CSS-классы ко всем полям формы.
             - Убираем параметр 'help_text' со всех полей, чтоб этого больше не было по умолчанию на html-странице."""
         super().__init__(*args, **kwargs)
-
-        # ШАГ 1: Убираю отображение help_text на странице, так как help_text из model.py дублирует то, что мы
-        # добавили в forms.ModelForm (параметры "placeholder" в widgets).
         for field_name, field in self.fields.items():
             field.help_text = None
-            # ШАГ 2: Добавляю класс "form-control" для всех полей, кроме чекбоксов:
             if not isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs["class"] = "form-control text-muted-secondary"
-            # ШАГ 3: Добавляю класс "form-check-input" для чекбоксов:
             if isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs["class"] = "form-check-input"
+
+
+class AddNewMailingForm(forms.ModelForm):
+    """Форма для добавления пользователем новой Рассылки на странице mailing_add_update.html"""
+
+    class Meta:
+        model = Mailing
+        fields = "__all__"
+        widgets = {
+            "first_message_sending": forms.DateTimeInput(
+                attrs={
+                    "type": "datetime-local",
+                    "class": "form-control text-muted-secondary",
+                    "placeholder": "Укажите дату и время первой отправки",
+                }
+            ),
+            "end_message_sending": forms.DateTimeInput(
+                attrs={
+                    "type": "datetime-local",
+                    "class": "form-control text-muted-secondary",
+                    "placeholder": "Укажите дату и время окончания отправки",
+                }
+            ),
+            "status": forms.Select(
+                attrs={"class": "form-select text-muted-secondary"}
+            ),
+            "message": forms.Select(
+                attrs={"class": "form-select text-muted-secondary"}
+            ),
+            "recipients": forms.SelectMultiple(
+                attrs={"class": "form-select text-muted-secondary"}
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.help_text = None
