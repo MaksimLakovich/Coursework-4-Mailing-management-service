@@ -13,7 +13,7 @@ class RecipientListView(generic.ListView):
     """Представление для отображения списка Получателей рассылки."""
 
     model = Recipient
-    template_name = "app_mailing/recipient_list.html"
+    template_name = "app_mailing/recipient/recipient_list.html"
     context_object_name = "recipients"
 
 
@@ -22,7 +22,7 @@ class RecipientCreateView(generic.CreateView):
 
     model = Recipient
     form_class = AddNewRecipientForm
-    template_name = "app_mailing/recipient_add_update.html"
+    template_name = "app_mailing/recipient/recipient_add_update.html"
     success_url = reverse_lazy("app_mailing:recipient_list_page")
 
     def form_valid(self, form):
@@ -36,7 +36,7 @@ class RecipientUpdateView(generic.UpdateView):
 
     model = Recipient
     form_class = AddNewRecipientForm
-    template_name = "app_mailing/recipient_add_update.html"
+    template_name = "app_mailing/recipient/recipient_add_update.html"
     success_url = reverse_lazy("app_mailing:recipient_list_page")
 
     def form_valid(self, form):
@@ -50,7 +50,7 @@ class RecipientDeleteView(generic.DeleteView):
     """Представление для удаления Получателя рассылки."""
 
     model = Recipient
-    template_name = "app_mailing/recipient_delete.html"
+    template_name = "app_mailing/recipient/recipient_delete.html"
     context_object_name = "recipient"
     success_url = reverse_lazy("app_mailing:recipient_list_page")
 
@@ -68,7 +68,7 @@ class MessageListView(generic.ListView):
     """Представление для отображения списка Сообщений для рассылок."""
 
     model = Message
-    template_name = "app_mailing/message_list.html"
+    template_name = "app_mailing/message/message_list.html"
     context_object_name = "app_messages"
 
 
@@ -77,7 +77,7 @@ class MessageCreateView(generic.CreateView):
 
     model = Message
     form_class = AddNewMessageForm
-    template_name = "app_mailing/message_add_update.html"
+    template_name = "app_mailing/message/message_add_update.html"
     success_url = reverse_lazy("app_mailing:message_list_page")
 
     def form_valid(self, form):
@@ -91,7 +91,7 @@ class MessageUpdateView(generic.UpdateView):
 
     model = Message
     form_class = AddNewMessageForm
-    template_name = "app_mailing/message_add_update.html"
+    template_name = "app_mailing/message/message_add_update.html"
     success_url = reverse_lazy("app_mailing:message_list_page")
 
     def form_valid(self, form):
@@ -104,7 +104,7 @@ class MessageDeleteView(generic.DeleteView):
     """Представление для удаления Сообщения рассылки."""
 
     model = Message
-    template_name = "app_mailing/message_delete.html"
+    template_name = "app_mailing/message/message_delete.html"
     context_object_name = "app_message"
     success_url = reverse_lazy("app_mailing:message_list_page")
 
@@ -121,5 +121,5 @@ class MailingListView(generic.ListView):
     """Представление для отображения списка Рассылок."""
 
     model = Mailing
-    template_name = "app_mailing/mailing_list.html"
+    template_name = "app_mailing/mailing/mailing_list.html"
     context_object_name = "mailings"
