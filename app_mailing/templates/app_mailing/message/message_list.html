@@ -20,7 +20,7 @@
 <!-- Таблица -->
 <div class="table-responsive">
     <table class="table table-hover align-middle table-bordered shadow-sm">
-        <thead class="table-dark text-center">
+        <thead class="table-dark text-center align-middle">
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">Тема письма</th>
@@ -31,8 +31,8 @@
         <tbody>
             {% for message in app_messages %}
             <tr>
-                <th scope="row">{{ forloop.counter }}</th>
-                <td>{{ message.message_subject|default:"—" }}</td>
+                <th class="text-center" scope="row">{{ forloop.counter }}</th>
+                <td><strong>{{ message.message_subject|default:"—" }}</strong></td>
                 <td>{{ message.message_body|default:"—" }}</td>
                 <td class="text-center">
                     <a href="{% url 'app_mailing:message_update_page' message.pk %}" class="btn btn-sm btn-warning me-1">

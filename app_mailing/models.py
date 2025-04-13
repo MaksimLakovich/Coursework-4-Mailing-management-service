@@ -27,7 +27,7 @@ class Recipient(models.Model):
 
     def __str__(self):
         """Метод определяет строковое представление объекта. Полезно для отображения объектов в админке/консоли."""
-        return f"Получатель рассылки: {self.email} ({self.full_name})"
+        return f"{self.email} ({self.full_name})"
 
     class Meta:
         verbose_name = "Получатель"

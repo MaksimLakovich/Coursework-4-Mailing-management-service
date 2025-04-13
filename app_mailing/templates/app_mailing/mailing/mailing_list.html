@@ -20,40 +20,89 @@
 <!-- Таблица -->
 <div class="table-responsive">
     <table class="table table-hover align-middle table-bordered shadow-sm">
-        <thead class="table-dark text-center">
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Первая отправка</th>
-                <th scope="col">Окончание отправки</th>
-                <th scope="col">Статус рассылки</th>
-                <th scope="col">Сообщение рассылки</th>
-                <th scope="col">Получатели рассылки</th>
-                <th scope="col">Действия</th>
-            </tr>
+
+        <!-- Оглавление таблицы -->
+        <thead class="table-dark text-center align-middle">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Первая отправка</th>
+            <th scope="col">Окончание отправки</th>
+            <th scope="col">Статус рассылки</th>
+            <th scope="col">Сообщение рассылки</th>
+            <th scope="col">Получатели рассылки</th>
+            <th scope="col">Действия</th>
+        </tr>
         </thead>
+
+        <!-- Содержимое таблицы -->
         <tbody>
-            {% for mailing in mailings %}
-            <tr>
-                <th scope="row">{{ forloop.counter }}</th>
-                <td>{{ mailing.first_message_sending|default:"—" }}</td>
-                <td>{{ mailing.end_message_sending|default:"—" }}</td>
-                <td>{{ mailing.status|default:"—" }}</td>
-                <td>{{ mailing.message|default:"—" }}</td>
-                <td>{{ mailing.recipients|default:"—" }}</td>
-                <td class="text-center">
-                    <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger">
-                        <i class="fas fa-trash-alt"></i>
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center text-muted py-4">Пока нет рассылок</td>
-            </tr>
-            {% endfor %}
+        {% for mailing in mailings %}
+        <tr>
+
+            <!-- Нумерация, дата запуска, дата окончания -->
+            <th class="text-center" scope="row">{{ forloop.counter }}</th>
+            <td class="text-center" style="min-width: 180px;">{{ mailing.first_message_sending|date:"d.m.Y, H:i" }}</td>
+            <td class="text-center" style="min-width: 180px;">{{ mailing.end_message_sending|date:"d.m.Y, H:i" }}</td>
+
+            <!-- Статус -->
+            <td class="text-center">
+                {% if mailing.status == "launched" %}
+                <span class="text-success fw-bold">{{ mailing.get_status_display }}</span>
+                {% elif mailing.status == "accomplished" %}
+                <span class="text-secondary fw-bold">{{ mailing.get_status_display }}</span>
+                {% elif mailing.status == "created" %}
+                <span class="fw-bold">{{ mailing.get_status_display }}</span>
+                {% else %}
+                {{ mailing.get_status_display }}
+                {% endif %}
+            </td>
+
+            <!-- Сообщение -->
+            <td>{{ mailing.message.message_subject|default:"—" }}</td>
+
+            <!-- Получатели -->
+            <td class="text-center">
+                <span
+                        data-bs-toggle="popover"
+                        data-bs-html="true"
+                        data-bs-trigger="focus"
+                        title="Получатели:"
+                        data-bs-content="{% for r in mailing.recipients.all %}{{ r.full_name }}<br>{% endfor %}"
+                        tabindex="0"
+                        class="btn btn-sm btn-outline-dark"
+                >{{ mailing.recipients.count }}</span>
+            </td>
+<!--            <td class="text-center">-->
+<!--                {% with recipients=mailing.recipients.all %}-->
+<!--                {% if recipients.count <= 0 %}-->
+<!--                <span-->
+<!--                        data-bs-toggle="tooltip"-->
+<!--                        data-bs-placement="top"-->
+<!--                        data-bs-html="true"-->
+<!--                        title="{% for r in recipients %}{{ r.full_name }}<br>{% endfor %}"-->
+<!--                >{{ recipients.count }}-->
+<!--                </span>-->
+<!--                {% else %}-->
+<!--                <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}">{{ recipients.count }}</a>-->
+<!--                {% endif %}-->
+<!--                {% endwith %}-->
+<!--            </td>-->
+
+            <!-- Кнопки действия -->
+            <td class="text-center">
+                <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash-alt"></i>
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center text-muted py-4">Пока нет рассылок</td>
+        </tr>
+        {% endfor %}
         </tbody>
     </table>
 </div>

@@ -86,11 +86,22 @@ class AddNewMailingForm(forms.ModelForm):
                 attrs={"class": "form-select text-muted-secondary"}
             ),
             "recipients": forms.SelectMultiple(
-                attrs={"class": "form-select text-muted-secondary"}
+                attrs={"class": "duallistbox form-control", "multiple": "multiple",}
             ),
         }
 
     def __init__(self, *args, **kwargs):
+        """Стилизации полей формы с использованием виджета. Виджеты позволяют настроить внешний вид и поведение полей
+        формы через атрибуты. Это делается с помощью метода attrs.
+            - Переопределяю отображение объектов в select'е, чтоб не выводился из модели текст "Тема письма:"
+            в f"Тема письма: {self.message_subject}"
+            - Убираем параметр 'help_text' со всех полей, чтоб этого больше не было по умолчанию на html-странице."""
         super().__init__(*args, **kwargs)
+
+        def get_message_subject(obj):
+            return obj.message_subject
+
+        self.fields["message"].label_from_instance = get_message_subject
+
         for field_name, field in self.fields.items():
             field.help_text = None

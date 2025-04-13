@@ -10,11 +10,34 @@
     <table class="table table-hover align-middle table-bordered shadow-sm">
         <tbody>
         <tr>
-            <td>{{ mailing.first_message_sending }}</td>
-            <td>{{ mailing.end_message_sending }}</td>
-            <td>{{ mailing.status }}</td>
-            <td>{{ mailing.message }}</td>
-            <td>{{ mailing.recipients }}</td>
+            <!-- Нумерация, дата запуска, дата окончания -->
+            <td class="text-center" style="min-width: 180px;">{{ mailing.first_message_sending|date:"d.m.Y, H:i" }}</td>
+            <td class="text-center" style="min-width: 180px;">{{ mailing.end_message_sending|date:"d.m.Y, H:i" }}</td>
+            <!-- Статус -->
+            <td class="text-center">
+                {% if mailing.status == "launched" %}
+                <span class="text-success fw-bold">{{ mailing.get_status_display }}</span>
+                {% elif mailing.status == "accomplished" %}
+                <span class="text-secondary fw-bold">{{ mailing.get_status_display }}</span>
+                {% elif mailing.status == "created" %}
+                <span class="fw-bold">{{ mailing.get_status_display }}</span>
+                {% else %}
+                {{ mailing.get_status_display }}
+                {% endif %}
+            </td>
+            <!-- Сообщение -->
+            <td>{{ mailing.message.message_subject }}</td>
+            <!-- Получатели -->
+            <td>
+                <ul class="mb-0 ps-3" style="min-width: 350px;">
+                    {% for recipient in mailing.recipients.all %}
+                    <li>{{ recipient.full_name }}</li>
+                    {% empty %}
+                    <li class="text-muted">Нет получателей</li>
+                    {% endfor %}
+                </ul>
+            </td>
+<!--            <td>{{ mailing.recipients }}</td>-->
         </tr>
         </tbody>
     </table>

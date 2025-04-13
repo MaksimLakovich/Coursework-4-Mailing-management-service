@@ -20,7 +20,7 @@
 <!-- Таблица -->
 <div class="table-responsive">
     <table class="table table-hover align-middle table-bordered shadow-sm">
-        <thead class="table-dark text-center">
+        <thead class="table-dark text-center align-middle">
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">Ф.И.О. получателя</th>
@@ -32,9 +32,9 @@
         <tbody>
             {% for recipient in recipients %}
             <tr>
-                <th scope="row">{{ forloop.counter }}</th>
+                <th class="text-center" scope="row">{{ forloop.counter }}</th>
                 <td>{{ recipient.full_name }}</td>
-                <td>{{ recipient.email }}</td>
+                <td><strong>{{ recipient.email }}</strong></td>
                 <td>{{ recipient.comment|default:"—" }}</td>
                 <td class="text-center">
                     <a href="{% url 'app_mailing:recipient_update_page' recipient.pk %}" class="btn btn-sm btn-warning me-1">

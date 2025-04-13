@@ -92,6 +92,44 @@
 <!-- Подключение статичеcких файлов со скриптами Bootstrap -->
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 
+<!-- Инициализирование tooltip, чтоб для Получателей отображалось "количество" и "тултип с ФИО" (при наведении отображаю ФИО получателей) -->
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {new bootstrap.Tooltip(tooltipTriggerEl)})
+</script>
+
+<!-- Инициализирование popover, чтоб для Получателей отображалось "количество" и "тултип с ФИО" (при наведении отображаю ФИО получателей) -->
+<script>
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    popoverTriggerList.forEach(function (popoverTriggerEl) {new bootstrap.Popover(popoverTriggerEl)})
+</script>
+
+
+<!--Bootstrap Dual Listbox — это готовый jQuery-плагин с поддержкой Bootstrap-стилей. Он превращает обычное <select multiple> поле в 2 колонки: слева — доступные, справа — выбранные.-->
+<!-- Bootstrap Dual Listbox CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap4-duallistbox/dist/bootstrap-duallistbox.min.css">
+<!-- jQuery (если еще не подключен) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap Dual Listbox JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap4-duallistbox/dist/jquery.bootstrap-duallistbox.min.js"></script>
+<!-- Инициализация Bootstrap Dual Listbox -->
+<script>
+    $(document).ready(function () {
+      $('.duallistbox').bootstrapDualListbox({
+        nonSelectedListLabel: 'Все получатели',
+        selectedListLabel: 'Выбранные получатели',
+        preserveSelectionOnMove: 'moved',
+        moveOnSelect: false,
+        filterPlaceHolder: 'Поиск...',
+        infoText: 'Показано {0}',
+        infoTextEmpty: 'Нет получателей',
+        infoTextFiltered: '<span class="label label-warning">Фильтр:</span> {0} из {1}',
+        selectorMinimalHeight: 200
+      });
+    });
+</script>
+
+
 </body>
 
 </html>
