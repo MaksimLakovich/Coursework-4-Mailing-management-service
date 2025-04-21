@@ -63,25 +63,8 @@ class AddNewMailingForm(forms.ModelForm):
 
     class Meta:
         model = Mailing
-        fields = "__all__"
+        fields = ["message", "recipients"]
         widgets = {
-            "first_message_sending": forms.DateTimeInput(
-                attrs={
-                    "type": "datetime-local",
-                    "class": "form-control text-muted-secondary",
-                    "placeholder": "Укажите дату и время первой отправки",
-                }
-            ),
-            "end_message_sending": forms.DateTimeInput(
-                attrs={
-                    "type": "datetime-local",
-                    "class": "form-control text-muted-secondary",
-                    "placeholder": "Укажите дату и время окончания отправки",
-                }
-            ),
-            "status": forms.Select(
-                attrs={"class": "form-select text-muted-secondary"}
-            ),
             "message": forms.Select(
                 attrs={"class": "form-select text-muted-secondary"}
             ),

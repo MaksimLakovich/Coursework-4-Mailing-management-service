@@ -10,6 +10,7 @@ from django.views import generic
 from app_mailing.forms import AddNewMailingForm, AddNewMessageForm, AddNewRecipientForm
 from app_mailing.models import Mailing, Message, Recipient
 
+
 # 1. Контроллеры для "Управление клиентами"
 
 
