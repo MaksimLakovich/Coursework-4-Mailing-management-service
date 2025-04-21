@@ -1,10 +1,14 @@
+import os
+
 from django.contrib import messages
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views import generic
 
-from app_mailing.forms import AddNewRecipientForm, AddNewMessageForm, AddNewMailingForm
-from app_mailing.models import Recipient, Message, Mailing
-
+from app_mailing.forms import AddNewMailingForm, AddNewMessageForm, AddNewRecipientForm
+from app_mailing.models import Mailing, Message, Recipient
 
 # 1. Контроллеры для "Управление клиентами"
 
@@ -165,3 +169,48 @@ class MailingDeleteView(generic.DeleteView):
         """Отправка пользователю уведомления об успешном удалении Рассылки."""
         messages.success(self.request, "Вы удалили рассылку")
         return super().form_valid(form)
+
+
+class SendMailingView(generic.View):
+    """Представление для запуска выбранной пользователем Рассылки вручную через интерфейс."""
+
+    def post(self, request, pk):
+        """Отправка email всем получателям в выбранной Рассылке."""
+        mailing = get_object_or_404(Mailing, pk=pk)
+
+        if mailing.status != "created":
+            messages.warning(request, "Эту рассылку нельзя повторно запустить.")
+            return redirect("app_mailing:mailing_list_page")
+
+        subject = mailing.message.message_subject
+        message = mailing.message.message_body
+        recipients = mailing.recipients.all()
+        from_email = os.getenv("YANDEX_EMAIL_HOST_USER")
+
+        success_count = 0
+
+        if not recipients.exists():
+            messages.warning(request, "У этой рассылки нет получателей.")
+            return redirect("app_mailing:mailing_list_page")
+
+        mailing.first_message_sending = timezone.now()  # Фиксирую дату начала
+
+        for recipient in recipients:  # Запускаю рассылку по всем получателям
+            try:
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email=from_email,
+                    recipient_list=[recipient.email],
+                    fail_silently=False,
+                )
+                success_count += 1
+            except Exception as e:
+                print(f"Ошибка при отправке письма на {recipient.email}: {e}")
+
+        mailing.end_message_sending = timezone.now()  # Фиксирую дату окончания
+        mailing.status = "launched"  # Меняю статус рассылки после завершения
+        mailing.save()
+
+        messages.success(request, f"Рассылка успешно отправлена {success_count} получателям.")
+        return redirect("app_mailing:mailing_list_page")
