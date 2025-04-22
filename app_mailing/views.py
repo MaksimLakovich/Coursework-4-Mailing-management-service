@@ -129,6 +129,33 @@ class MailingListView(generic.ListView):
     template_name = "app_mailing/mailing/mailing_list.html"
     context_object_name = "mailings"
 
+    def get_queryset(self):
+        """Сортировка по статусу Рассылки: запущена → создана → завершена, внутри по дате окончания."""
+
+        # Определяю порядок статусов
+        status_order = {
+            "launched": 0,
+            "created": 1,
+            "accomplished": 2,
+        }
+
+        all_mailings = Mailing.objects.all()
+
+        def sort_key(mailing):
+            # Получаю приоритет статуса (если статус не найден - ставлю 3, чтоб он был точно в самом конце списка)
+            status_priority = status_order.get(mailing.status, 3)
+            # Получаю timestamp окончания рассылки с преобразованием времени в секунды
+            # для оптимизации процесса сравнения (если None - то ставлю 0)
+            if mailing.end_message_sending:
+                timestamp = mailing.end_message_sending.timestamp()
+            else:
+                timestamp = 0
+            return (status_priority, -timestamp)  # Возвращаю кортеж: сначала статус, потом минус время (для убывания)
+
+        # Сортирую с помощью созданного sort_key() и возвращаю отсортированный список
+        sorted_mailings = sorted(all_mailings, key=sort_key)
+        return sorted_mailings
+
 
 class MailingCreateView(generic.CreateView):
     """Представление для добавления новой Рассылки в список."""

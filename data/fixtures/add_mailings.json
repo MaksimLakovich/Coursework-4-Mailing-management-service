@@ -3,44 +3,44 @@
     "model": "app_mailing.mailing",
     "pk": 1,
     "fields": {
-      "first_message_sending": "2025-04-10T10:00:00Z",
+      "first_message_sending": null,
       "end_message_sending": null,
       "status": "created",
       "message": 1,
-      "recipients": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      "recipients": []
     }
   },
   {
     "model": "app_mailing.mailing",
     "pk": 2,
     "fields": {
-      "first_message_sending": "2025-04-11T12:00:00Z",
+      "first_message_sending": null,
       "end_message_sending": null,
       "status": "created",
       "message": 2,
-      "recipients": [11, 12, 13, 14, 15]
+      "recipients": []
     }
   },
   {
     "model": "app_mailing.mailing",
     "pk": 3,
     "fields": {
-      "first_message_sending": "2025-04-12T14:00:00Z",
+      "first_message_sending": null,
       "end_message_sending": null,
       "status": "created",
       "message": 3,
-      "recipients": [16, 17, 18, 19, 20]
+      "recipients": []
     }
   },
   {
     "model": "app_mailing.mailing",
     "pk": 4,
     "fields": {
-      "first_message_sending": "2025-04-12T15:30:00Z",
+      "first_message_sending": null,
       "end_message_sending": null,
-      "status": "launched",
+      "status": "created",
       "message": 4,
-      "recipients": [1, 5, 9, 13, 17, 20]
+      "recipients": []
     }
   },
   {
