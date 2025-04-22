@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from app_mailing.models import Mailing, Message, Recipient
+from app_mailing.models import Mailing, Message, Recipient, Attempt
 
 
 @admin.register(Recipient)
@@ -25,3 +25,11 @@ class MailingAdmin(admin.ModelAdmin):
     list_display = ("id", "first_message_sending", "end_message_sending", "status", "message",)
     list_filter = ("first_message_sending", "end_message_sending", "status", "message",)
     search_fields = ("first_message_sending", "end_message_sending", "status", "message",)
+
+
+@admin.register(Attempt)
+class AttemptAdmin(admin.ModelAdmin):
+    """Настройка отображения данных "Попытки рассылки" в админке (модель *Attempt*)."""
+    list_display = ("id", "attempt_time", "status", "server_response", "mailing", "recipient",)
+    list_filter = ("attempt_time", "status", "server_response", "mailing", "recipient",)
+    search_fields = ("attempt_time", "status", "server_response", "mailing", "recipient",)

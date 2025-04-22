@@ -124,3 +124,55 @@ class Mailing(models.Model):
         verbose_name_plural = "Рассылки"
         ordering = ["message"]
         db_table = "tb_mailing"
+
+
+class Attempt(models.Model):
+    """Модель *Attempt* представляет "Попытка рассылки" в сервисе управления рассылками.
+    Статусы попытки: успешно / не успешно."""
+
+    ATTEMPT_STATUS = [
+        ("success", "Успешно"),
+        ("failed", "Не успешно"),
+    ]
+
+    attempt_time = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата и время попытки рассылки:",
+        help_text="Укажите дату и время попытки рассылки",
+    )
+    status = models.CharField(
+        max_length=15,
+        choices=ATTEMPT_STATUS,
+        verbose_name="Статус попытки рассылки:",
+        help_text="Укажите статус попытки рассылки",
+    )
+    server_response = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Ответ почтового сервера:",
+        help_text="Укажите ответ почтового сервера",
+    )
+    mailing = models.ForeignKey(
+        to=Mailing,
+        on_delete=models.CASCADE,
+        related_name="attempts",
+        verbose_name="Рассылка:",
+        help_text="Укажите рассылку",
+    )
+    recipient = models.ForeignKey(
+        to=Recipient,
+        on_delete=models.CASCADE,
+        related_name="attempts",
+        verbose_name="Получатель:",
+        help_text="Укажите получателя, которому была отправлена рассылка",
+    )
+
+    def __str__(self):
+        """Метод определяет строковое представление объекта. Полезно для отображения объектов в админке/консоли."""
+        return f"{self.attempt_time:%d.%m.%Y %H:%M} | {self.recipient.email} | {self.get_status_display()}"
+
+    class Meta:
+        verbose_name = "Попытка рассылки"
+        verbose_name_plural = "Попытки рассылок"
+        ordering = ["-attempt_time"]
+        db_table = "tb_attempt"
