@@ -213,18 +213,20 @@ class SendMailingView(generic.View):
             messages.warning(request, "Эту рассылку нельзя повторно запустить.")
             return redirect("app_mailing:mailing_list_page")
 
-        subject = mailing.message.message_subject
-        message = mailing.message.message_body
         recipients = mailing.recipients.all()
-        from_email = os.getenv("YANDEX_EMAIL_HOST_USER")
-
-        success_count = 0
-
         if not recipients.exists():
             messages.warning(request, "У этой рассылки нет получателей.")
             return redirect("app_mailing:mailing_list_page")
 
+        subject = mailing.message.message_subject
+        message = mailing.message.message_body
+        from_email = os.getenv("YANDEX_EMAIL_HOST_USER")
+
+        mailing.status = "launched"  # Меняю статус рассылки, что она запущена
         mailing.first_message_sending = timezone.now()  # Фиксирую дату начала
+        mailing.save()
+
+        success_count = 0
 
         for recipient in recipients:  # Запускаю рассылку по всем получателям
             try:
@@ -240,7 +242,7 @@ class SendMailingView(generic.View):
                 print(f"Ошибка при отправке письма на {recipient.email}: {e}")
 
         mailing.end_message_sending = timezone.now()  # Фиксирую дату окончания
-        mailing.status = "launched"  # Меняю статус рассылки после завершения
+        mailing.status = "accomplished"  # Меняю статус рассылки после завершения
         mailing.save()
 
         messages.success(request, f"Рассылка успешно отправлена {success_count} получателям.")
