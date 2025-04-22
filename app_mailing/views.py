@@ -21,6 +21,10 @@ class RecipientListView(generic.ListView):
     template_name = "app_mailing/recipient/recipient_list.html"
     context_object_name = "recipients"
 
+    def get_queryset(self):
+        """Сортировка по ФИО (в алфавитном порядке)."""
+        return Recipient.objects.order_by("full_name")
+
 
 class RecipientCreateView(generic.CreateView):
     """Представление для добавления нового Получателя рассылки."""
@@ -131,7 +135,6 @@ class MailingListView(generic.ListView):
 
     def get_queryset(self):
         """Сортировка по статусу Рассылки: запущена → создана → завершена, внутри по дате окончания."""
-
         # Определяю порядок статусов
         status_order = {
             "launched": 0,
