@@ -10,9 +10,6 @@
     <table class="table table-hover align-middle table-bordered shadow-sm">
         <tbody>
         <tr>
-            <!-- Нумерация, дата запуска, дата окончания -->
-            <td class="text-center" style="min-width: 180px;">{{ mailing.first_message_sending|date:"d.m.Y, H:i" }}</td>
-            <td class="text-center" style="min-width: 180px;">{{ mailing.end_message_sending|date:"d.m.Y, H:i" }}</td>
             <!-- Статус -->
             <td class="text-center">
                 {% if mailing.status == "launched" %}
