@@ -4,11 +4,12 @@ from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from app_mailing.models import Mailing
+from app_mailing.models import Attempt, Mailing
 
 
 class Command(BaseCommand):
-    """Команда для запуска Рассылки из командной строки."""
+    """Команда для запуска *Рассылки* из командной строки и фиксации *Попыток рассылок*
+    по каждому *Получателю* из рассылки."""
 
     help = "Запуск рассылки по ID"
 
@@ -17,7 +18,8 @@ class Command(BaseCommand):
         parser.add_argument("mailing_id", type=int, help="ID рассылки")
 
     def handle(self, *args, **kwargs):
-        """Основная логика команды: проверяет статус, запускает отправку, обновляет даты и выводит результат."""
+        """Основная логика команды: проверяет статус, запускает отправку, обновляет даты,
+        фиксирует попытки рассылок и выводит результат."""
         mailing_id = kwargs["mailing_id"]
 
         try:
@@ -54,8 +56,21 @@ class Command(BaseCommand):
                     recipient_list=[recipient.email],
                     fail_silently=False,
                 )
+                Attempt.objects.create(
+                    mailing=mailing,
+                    recipient=recipient,
+                    status="success",
+                    server_response="OK"
+                )
                 success_count += 1
+
             except Exception as e:
+                Attempt.objects.create(
+                    mailing=mailing,
+                    recipient=recipient,
+                    status="failed",
+                    server_response=str(e)
+                )
                 self.stdout.write(self.style.ERROR(f'Ошибка при отправке {recipient.email}: {e}'))
 
         mailing.end_message_sending = timezone.now()  # Фиксирую дату окончания

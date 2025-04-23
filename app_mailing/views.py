@@ -7,9 +7,9 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import generic
 
-from app_mailing.forms import AddNewMailingForm, AddNewMessageForm, AddNewRecipientForm
-from app_mailing.models import Mailing, Message, Recipient
-
+from app_mailing.forms import (AddNewMailingForm, AddNewMessageForm,
+                               AddNewRecipientForm)
+from app_mailing.models import Attempt, Mailing, Message, Recipient
 
 # 1. Контроллеры для "Управление клиентами"
 
@@ -203,10 +203,12 @@ class MailingDeleteView(generic.DeleteView):
 
 
 class SendMailingView(generic.View):
-    """Представление для запуска выбранной пользователем Рассылки вручную через интерфейс."""
+    """Представление для запуска выбранной пользователем *Рассылки* вручную через интерфейс
+    и фиксации *Попыток рассылок* по каждому *Получателю* из рассылки."""
 
     def post(self, request, pk):
-        """Отправка email всем получателям в выбранной Рассылке."""
+        """1) Отправка email всем получателям в выбранной *Рассылке*.
+        2) Фиксация *Попыток рассылок* по каждому получателю."""
         mailing = get_object_or_404(Mailing, pk=pk)
 
         if mailing.status != "created":
@@ -237,8 +239,20 @@ class SendMailingView(generic.View):
                     recipient_list=[recipient.email],
                     fail_silently=False,
                 )
+                Attempt.objects.create(
+                    mailing=mailing,
+                    recipient=recipient,
+                    status="success",
+                    server_response="OK"
+                )
                 success_count += 1
             except Exception as e:
+                Attempt.objects.create(
+                    mailing=mailing,
+                    recipient=recipient,
+                    status="failed",
+                    server_response=str(e)
+                )
                 print(f"Ошибка при отправке письма на {recipient.email}: {e}")
 
         mailing.end_message_sending = timezone.now()  # Фиксирую дату окончания
