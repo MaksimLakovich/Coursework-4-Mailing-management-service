@@ -261,3 +261,33 @@ class SendMailingView(generic.View):
 
         messages.success(request, f"Рассылка успешно отправлена {success_count} получателям.")
         return redirect("app_mailing:mailing_list_page")
+
+
+# 4. Контроллеры для "Главная страница"
+
+
+class MainPageView(generic.TemplateView):
+    """Представление для отображения *Главной страницы* со статистикой рассылок."""
+
+    template_name = "app_mailing/home/main.html"
+
+    def get_context_data(self, **kwargs):
+        """Добавляем в контекст данные для отображения на *Главной странице*:
+            - Общее количество рассылок.
+            - Количество активных рассылок (со статусом 'Запущена').
+            - Количество получателей по активным рассылкам.
+            - Общее количество уникальных получателей."""
+        context = super().get_context_data(**kwargs)
+
+        launched_mailings = Mailing.objects.filter(status="launched")
+
+        # Кол-во активных рассылок
+        context["active_mailings"] = launched_mailings.count()
+        # Суммарное кол-во получателей по активным рассылкам
+        context["active_recipients_count"] = sum(m.recipients.count() for m in launched_mailings)
+        # Кол-во всех существующих рассылок во всех статусах
+        context["total_mailings"] = Mailing.objects.count()
+        # Кол-во всех получателей
+        context["unique_recipients"] = Recipient.objects.count()
+
+        return context

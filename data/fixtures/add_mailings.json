@@ -59,8 +59,8 @@
     "pk": 6,
     "fields": {
       "first_message_sending": "2025-04-06T08:00:00Z",
-      "end_message_sending": "2025-04-06T08:30:00Z",
-      "status": "accomplished",
+      "end_message_sending": null,
+      "status": "launched",
       "message": 1,
       "recipients": [11, 12, 13, 14, 15]
     }
@@ -70,8 +70,8 @@
     "pk": 7,
     "fields": {
       "first_message_sending": "2025-04-07T08:00:00Z",
-      "end_message_sending": "2025-04-07T08:30:00Z",
-      "status": "accomplished",
+      "end_message_sending": null,
+      "status": "launched",
       "message": 2,
       "recipients": [16, 17, 18, 19, 20]
     }
@@ -103,8 +103,8 @@
     "pk": 10,
     "fields": {
       "first_message_sending": "2025-04-10T08:00:00Z",
-      "end_message_sending": "2025-04-10T08:30:00Z",
-      "status": "accomplished",
+      "end_message_sending": null,
+      "status": "launched",
       "message": 5,
       "recipients": [3, 8, 13, 18]
     }
