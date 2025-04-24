@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from users.managers import AppUserManager
+
 
 class AppUser(AbstractUser):
     """Модель AppUser представляет пользователя приложения."""
@@ -20,6 +22,8 @@ class AppUser(AbstractUser):
         verbose_name="Аватар:",
         help_text="Загрузите аватар",
     )
+
+    objects = AppUserManager()  # Указываю кастомный менеджер для пользователя без поля username.
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
