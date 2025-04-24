@@ -167,6 +167,10 @@
 
 4) Админка `AttemptAdmin(admin.ModelAdmin)` - отображение данных "Попытки рассылки" в админке (модель *Attempt*).
 
+## _Приложение "app_mailing" (app_mailing/admin.py):_
+
+1) Админка `AppUserAdmin(UserAdmin)` - отображения модели "Пользователя" в админке (модель *AppUser*).
+
 
 
 
