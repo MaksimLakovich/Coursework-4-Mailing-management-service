@@ -139,6 +139,15 @@
      - Рассылка (mailing) - внешний ключ на модель "Рассылка" (*models.ForeignKey(to=Mailing)*).
      - Получатель (recipient) - внешний ключ на модель "Получатель" (*models.ForeignKey(to=Recipient)*).
 
+## _Приложение "users" (users/models.py):_
+
+1) Модель данных `AppUser(AbstractUser)` - представляет "Пользователя" в сервисе управления рассылками.
+   - Наследуется от модели **AbstractUser**, которая является готовой моделью и включает все основные поля и методы, такие как username, email, first_name, last_name, is_staff, is_active и другие.
+   - ***Дополнительно определил:***
+     - ник (username).
+     - почта (email).
+     - аватар (avatar).
+
 
 
 
@@ -333,6 +342,10 @@ DATABASE_PORT=
 # Настройка SMTP-сервера Яндекса для отправки уведомлений пользователям магазина по почте:
 YANDEX_EMAIL_HOST_USER=''
 YANDEX_EMAIL_HOST_PASSWORD=''
+
+# Данные почты и устанавливаемого пароля для создания Администратора с помощью кастомной команды:
+ADMIN_EMAIL=''
+ADMIN_PASSWORD=''
 ```
 
 

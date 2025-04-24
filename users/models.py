@@ -1,3 +1,35 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-# Create your models here.
+
+class AppUser(AbstractUser):
+    """Модель AppUser представляет пользователя приложения."""
+
+    username = None
+
+    email = models.EmailField(
+        unique=True,
+        verbose_name="Почта (username):",
+        help_text="Введите email",
+    )
+
+    avatar = models.ImageField(
+        upload_to="user_avatar/",
+        blank=True,
+        null=True,
+        verbose_name="Аватар:",
+        help_text="Загрузите аватар",
+    )
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["first_name", "last_name"]
+
+    def __str__(self):
+        """Метод определяет строковое представление объекта. Полезно для отображения объектов в админке/консоли."""
+        return f"{self.email}"
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+        ordering = ["email"]
+        db_table = "tb_app_users"
