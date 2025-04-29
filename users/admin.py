@@ -14,7 +14,7 @@ class AppUserAdmin(UserAdmin):
     # Группирует поля при редактировании пользователя:
     fieldsets = (
         (None, {"fields": ("email", "password")}),
-        ("Персональная информация", {"fields": ("username", "first_name", "last_name", "avatar")}),
+        ("Персональная информация", {"fields": ("first_name", "last_name", "avatar")}),
         ("Права доступа", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
         ("Даты", {"fields": ("last_login", "date_joined")}),
     )

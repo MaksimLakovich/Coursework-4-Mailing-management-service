@@ -269,7 +269,7 @@ class SendMailingView(generic.View):
 class MainPageView(generic.TemplateView):
     """Представление для отображения *Главной страницы* со статистикой рассылок."""
 
-    template_name = "app_mailing/home/main.html"
+    template_name = "app_mailing/main/main.html"
 
     def get_context_data(self, **kwargs):
         """Добавляем в контекст данные для отображения на *Главной странице*:
