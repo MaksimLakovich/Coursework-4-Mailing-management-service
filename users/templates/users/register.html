@@ -22,16 +22,23 @@
         </div>
     </div>
 
-    <!-- Форма для кнопок с отступом -->
+    <!-- Форма для полей с отступом  -->
     <div class="row justify-content-center mt-5">
         <div class="col-md-6">
             <div class="card rounded-4 border-0">
                 <div class="card-body p-5">
-                    <!-- Кнопки -->
-                    <div id="action-buttons" class="text-center">
-                        <a href="#" class="btn btn-outline-primary btn-lg w-100 mb-3">Войти</a>
-                        <a href="{% url 'users:register_page' %}" class="btn btn-primary btn-lg w-100">Зарегистрироваться</a>
-                    </div>
+                    <h3 class="text-center mb-4 fw-bold">Регистрация</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <!-- Кнопки  -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success btn-lg w-100">Зарегистрироваться</button>
+                        </div>
+                        <div id="action-buttons">
+                            <a href="{% url 'users:start_page' %}" class="btn btn-outline-secondary btn-lg w-100 mt-2">Отмена</a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
