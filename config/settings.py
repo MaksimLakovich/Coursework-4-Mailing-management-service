@@ -144,8 +144,8 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 LOGOUT_REDIRECT_URL = 'users:start_page'
 
-# LOGIN_URL = 'users:register'
-#
+# LOGIN_URL = 'app_mailing:main_page'
+
 # REDIS_URL = os.getenv('REDIS_URL')
 # CACHE_ENABLED = True
 # if CACHE_ENABLED:

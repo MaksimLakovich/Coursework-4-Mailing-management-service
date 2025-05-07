@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model, login
 # default_token_generator - генератор безопасных токенов Django для подтверждения email:
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import LoginView
 # get_current_site - получает текущий домен сайта (например, "mailforge.com"), используется в письме:
 from django.contrib.sites.shortcuts import get_current_site
 # send_mail - отправка email через системный smtp/email backend:
@@ -23,7 +24,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
 from django.views.generic import FormView, TemplateView
 
-from users.forms import AppUserRegistrationForm
+from users.forms import AppUserLoginForm, AppUserRegistrationForm
 
 
 class UserStartView(TemplateView):
@@ -147,3 +148,24 @@ class UserEmailConfirmationSentView(TemplateView):
         if self.request.user.is_authenticated:
             return redirect("app_mailing:main_page")
         return super().dispatch(request, *args, **kwargs)
+
+
+class UserLoginView(LoginView):
+    """Представление для входа пользователя (login.html)."""
+
+    # Явно указываю кастомную форму для входа пользователя, без этого не подтягиваются определенные в
+    # форме AppUserLoginForm стили (наверное, потому что по умолчанию LoginView использует стандартную
+    # форму Django → AuthenticationForm.)
+    authentication_form = AppUserLoginForm
+    template_name = "users/login.html"
+
+    def get_success_url(self):
+        """Метод get_success_url() в LoginView - это предпочтительный для Django способ указания редиректа после
+        успешной аутентификации. Если просто указать в контроллере "success_url = reverse_lazy(
+        'app_mailing:main_page'", то это не будет работать."""
+        return reverse_lazy("app_mailing:main_page")
+
+    def form_valid(self, form):
+        """Автоматический вход пользователя после успешной аутентификации."""
+        login(self.request, form.get_user())
+        return super().form_valid(form)
