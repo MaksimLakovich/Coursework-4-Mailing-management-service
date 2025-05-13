@@ -272,22 +272,40 @@ class MainPageView(generic.TemplateView):
     template_name = "app_mailing/main/main.html"
 
     def get_context_data(self, **kwargs):
-        """Добавляем в контекст данные для отображения на *Главной странице*:
+        """Добавляем в контекст данные для отображения на *Главной странице*.
+        ЧАСТЬ 1: Основная статистика по рассылкам из Mailing и получателям из Recipient:
             - Общее количество рассылок.
-            - Количество активных рассылок (со статусом 'Запущена').
-            - Количество получателей по активным рассылкам.
-            - Общее количество уникальных получателей."""
+            - Количество активных рассылок (статус 'Запущена') + количество получателей именно по активным рассылкам.
+            - Общее количество уникальных получателей.
+        ЧАСТЬ 2: Статистика по отправкам из Attempt:
+            - Количество успешных попыток рассылок.
+            - Количество неуспешных попыток рассылок.
+            - Общее количество отправленных сообщений + сколько из них именно уникальных текстов сообщений."""
         context = super().get_context_data(**kwargs)
 
+        # ЧАСТЬ 1: Основная статистика по рассылкам из Mailing и получателям из Recipient
         launched_mailings = Mailing.objects.filter(status="launched")
-
-        # Кол-во активных рассылок
-        context["active_mailings"] = launched_mailings.count()
-        # Суммарное кол-во получателей по активным рассылкам
-        context["active_recipients_count"] = sum(m.recipients.count() for m in launched_mailings)
         # Кол-во всех существующих рассылок во всех статусах
         context["total_mailings"] = Mailing.objects.count()
+        # Кол-во активных рассылок + подсчет итогового кол-ва получателей именно по активным рассылкам
+        context["active_mailings"] = launched_mailings.count()
+        context["active_recipients_count"] = sum(m.recipients.count() for m in launched_mailings)
         # Кол-во всех получателей
         context["unique_recipients"] = Recipient.objects.count()
+
+        # ЧАСТЬ 2: Статистика по отправкам из Attempt
+        successful_attempts = Attempt.objects.filter(status="success").count()
+        failed_attempts = Attempt.objects.filter(status="failed").count()
+        # Кол-во успешных попыток рассылок
+        context["successful_attempts"] = successful_attempts
+        # Кол-во неуспешных попыток рассылок
+        context["failed_attempts"] = failed_attempts
+        # Кол-во отправленных сообщений + сколько из них именно уникальных текстов сообщений (например, мы можем
+        # отправить 25 сообщений, но эти сообщения только по двум тематикам из "Сообщения")
+        # !!!! Технически для подсчета уникальных сообщений можно использовать distinct("mailing_id"), но это работает
+        # !!!! только в PostgreSQL. ЛУЧШЕ АЛЬТЕРНАТИВНОЕ РЕШЕНИЕ: использовать .values("mailing").distinct().count()
+        # !!!! потому что это работает во всех БД, что важно для поддержания кросс-базовой совместимости:
+        context["total_sent_messages"] = successful_attempts + failed_attempts
+        context["unique_sent_messages"] = (Attempt.objects.values("mailing").distinct().count())
 
         return context
