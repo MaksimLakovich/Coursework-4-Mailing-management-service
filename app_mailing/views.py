@@ -1,6 +1,7 @@
 import os
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -14,7 +15,7 @@ from app_mailing.models import Attempt, Mailing, Message, Recipient
 # 1. Контроллеры для "Управление клиентами"
 
 
-class RecipientListView(generic.ListView):
+class RecipientListView(LoginRequiredMixin, generic.ListView):
     """Представление для отображения списка Получателей рассылки."""
 
     model = Recipient
@@ -26,7 +27,7 @@ class RecipientListView(generic.ListView):
         return Recipient.objects.order_by("full_name")
 
 
-class RecipientCreateView(generic.CreateView):
+class RecipientCreateView(LoginRequiredMixin, generic.CreateView):
     """Представление для добавления нового Получателя рассылки."""
 
     model = Recipient
@@ -40,7 +41,7 @@ class RecipientCreateView(generic.CreateView):
         return super().form_valid(form)
 
 
-class RecipientUpdateView(generic.UpdateView):
+class RecipientUpdateView(LoginRequiredMixin, generic.UpdateView):
     """Представление для редактирования существующего Получателя рассылки."""
 
     model = Recipient
@@ -55,7 +56,7 @@ class RecipientUpdateView(generic.UpdateView):
         return super().form_valid(form)
 
 
-class RecipientDeleteView(generic.DeleteView):
+class RecipientDeleteView(LoginRequiredMixin, generic.DeleteView):
     """Представление для удаления Получателя рассылки."""
 
     model = Recipient
@@ -73,7 +74,7 @@ class RecipientDeleteView(generic.DeleteView):
 # 2. Контроллеры для "Управление сообщениями"
 
 
-class MessageListView(generic.ListView):
+class MessageListView(LoginRequiredMixin, generic.ListView):
     """Представление для отображения списка Сообщений для рассылок."""
 
     model = Message
@@ -81,7 +82,7 @@ class MessageListView(generic.ListView):
     context_object_name = "app_messages"
 
 
-class MessageCreateView(generic.CreateView):
+class MessageCreateView(LoginRequiredMixin, generic.CreateView):
     """Представление для добавления нового Сообщения рассылки в список."""
 
     model = Message
@@ -95,7 +96,7 @@ class MessageCreateView(generic.CreateView):
         return super().form_valid(form)
 
 
-class MessageUpdateView(generic.UpdateView):
+class MessageUpdateView(LoginRequiredMixin, generic.UpdateView):
     """Представление для редактирования существующего Сообщения рассылки."""
 
     model = Message
@@ -109,7 +110,7 @@ class MessageUpdateView(generic.UpdateView):
         return super().form_valid(form)
 
 
-class MessageDeleteView(generic.DeleteView):
+class MessageDeleteView(LoginRequiredMixin, generic.DeleteView):
     """Представление для удаления Сообщения рассылки."""
 
     model = Message
@@ -126,7 +127,7 @@ class MessageDeleteView(generic.DeleteView):
 # 3. Контроллеры для "Управление рассылками"
 
 
-class MailingListView(generic.ListView):
+class MailingListView(LoginRequiredMixin, generic.ListView):
     """Представление для отображения списка Рассылок."""
 
     model = Mailing
@@ -160,7 +161,7 @@ class MailingListView(generic.ListView):
         return sorted_mailings
 
 
-class MailingCreateView(generic.CreateView):
+class MailingCreateView(LoginRequiredMixin, generic.CreateView):
     """Представление для добавления новой Рассылки в список."""
 
     model = Mailing
@@ -174,7 +175,7 @@ class MailingCreateView(generic.CreateView):
         return super().form_valid(form)
 
 
-class MailingUpdateView(generic.UpdateView):
+class MailingUpdateView(LoginRequiredMixin, generic.UpdateView):
     """Представление для редактирования существующей Рассылки в списке."""
 
     model = Mailing
@@ -188,7 +189,7 @@ class MailingUpdateView(generic.UpdateView):
         return super().form_valid(form)
 
 
-class MailingDeleteView(generic.DeleteView):
+class MailingDeleteView(LoginRequiredMixin, generic.DeleteView):
     """Представление для удаления Рассылки."""
 
     model = Mailing
@@ -202,7 +203,7 @@ class MailingDeleteView(generic.DeleteView):
         return super().form_valid(form)
 
 
-class SendMailingView(generic.View):
+class SendMailingView(LoginRequiredMixin, generic.View):
     """Представление для запуска выбранной пользователем *Рассылки* вручную через интерфейс
     и фиксации *Попыток рассылок* по каждому *Получателю* из рассылки."""
 
@@ -266,7 +267,7 @@ class SendMailingView(generic.View):
 # 4. Контроллеры для "Главная страница"
 
 
-class MainPageView(generic.TemplateView):
+class MainPageView(LoginRequiredMixin, generic.TemplateView):
     """Представление для отображения *Главной страницы* со статистикой рассылок."""
 
     template_name = "app_mailing/main/main.html"
