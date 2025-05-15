@@ -7,7 +7,8 @@
       "end_message_sending": null,
       "status": "created",
       "message": 1,
-      "recipients": []
+      "recipients": [],
+      "owner": 14
     }
   },
   {
@@ -18,7 +19,8 @@
       "end_message_sending": null,
       "status": "created",
       "message": 2,
-      "recipients": []
+      "recipients": [],
+      "owner": 14
     }
   },
   {
@@ -29,7 +31,8 @@
       "end_message_sending": null,
       "status": "created",
       "message": 3,
-      "recipients": []
+      "recipients": [],
+      "owner": 14
     }
   },
   {
@@ -40,7 +43,8 @@
       "end_message_sending": null,
       "status": "created",
       "message": 4,
-      "recipients": []
+      "recipients": [],
+      "owner": 14
     }
   },
   {
@@ -51,7 +55,8 @@
       "end_message_sending": null,
       "status": "launched",
       "message": 5,
-      "recipients": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+      "recipients": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "owner": 14
     }
   },
   {
@@ -62,7 +67,8 @@
       "end_message_sending": null,
       "status": "launched",
       "message": 1,
-      "recipients": [11, 12, 13, 14, 15]
+      "recipients": [11, 12, 13, 14, 15],
+      "owner": 14
     }
   },
   {
@@ -73,7 +79,8 @@
       "end_message_sending": null,
       "status": "launched",
       "message": 2,
-      "recipients": [16, 17, 18, 19, 20]
+      "recipients": [16, 17, 18, 19, 20],
+      "owner": 14
     }
   },
   {
@@ -84,7 +91,8 @@
       "end_message_sending": "2025-04-08T08:30:00Z",
       "status": "accomplished",
       "message": 3,
-      "recipients": [1, 6, 11, 16]
+      "recipients": [1, 6, 11, 16],
+      "owner": 14
     }
   },
   {
@@ -95,7 +103,8 @@
       "end_message_sending": "2025-04-09T08:30:00Z",
       "status": "accomplished",
       "message": 4,
-      "recipients": [2, 7, 12, 17]
+      "recipients": [2, 7, 12, 17],
+      "owner": 14
     }
   },
   {
@@ -106,7 +115,8 @@
       "end_message_sending": null,
       "status": "launched",
       "message": 5,
-      "recipients": [3, 8, 13, 18]
+      "recipients": [3, 8, 13, 18],
+      "owner": 14
     }
   }
 ]

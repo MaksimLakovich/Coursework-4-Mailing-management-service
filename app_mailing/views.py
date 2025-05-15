@@ -3,6 +3,7 @@ import os
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -23,8 +24,9 @@ class RecipientListView(LoginRequiredMixin, generic.ListView):
     context_object_name = "recipients"
 
     def get_queryset(self):
-        """Сортировка по ФИО (в алфавитном порядке)."""
-        return Recipient.objects.order_by("full_name")
+        """1) Сортировка по ФИО (в алфавитном порядке).
+        2) Ограничение данных по owner, т.е. выводим только те данные, где user==owner."""
+        return Recipient.objects.filter(owner=self.request.user).order_by("full_name")
 
 
 class RecipientCreateView(LoginRequiredMixin, generic.CreateView):
@@ -36,8 +38,10 @@ class RecipientCreateView(LoginRequiredMixin, generic.CreateView):
     success_url = reverse_lazy("app_mailing:recipient_list_page")
 
     def form_valid(self, form):
-        """Отправка пользователю уведомления об успешном добавлении нового Получателя в список рассылки."""
+        """1) Отправка пользователю уведомления об успешном добавлении нового Получателя в список рассылки.
+        2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Получателя рассылки*."""
         messages.success(self.request, "Новый получатель успешно добавлен")
+        form.instance.owner = self.request.user  # Привязываю текущего пользователя как owner
         return super().form_valid(form)
 
 
@@ -48,6 +52,16 @@ class RecipientUpdateView(LoginRequiredMixin, generic.UpdateView):
     form_class = AddNewRecipientForm
     template_name = "app_mailing/recipient/recipient_add_update.html"
     success_url = reverse_lazy("app_mailing:recipient_list_page")
+
+    def dispatch(self, request, *args, **kwargs):
+        """Метод выполняет проверку прав пользователя на редактирование *Получателя рассылки* (создатель получателя),
+        заранее до выполнения любого запроса (GET, POST и т.д.)."""
+        recipient = get_object_or_404(Recipient, pk=self.kwargs["pk"])
+        if not request.user == recipient.owner:
+            return HttpResponseForbidden(
+                f"У вас нет прав для редактирования Получателя рассылки. Обратитесь к владельцу: {recipient.owner}"
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         """Отправка пользователю уведомления об успешном редактировании данных Получателя из списка рассылки."""
@@ -63,6 +77,16 @@ class RecipientDeleteView(LoginRequiredMixin, generic.DeleteView):
     template_name = "app_mailing/recipient/recipient_delete.html"
     context_object_name = "recipient"
     success_url = reverse_lazy("app_mailing:recipient_list_page")
+
+    def dispatch(self, request, *args, **kwargs):
+        """Метод выполняет проверку прав пользователя на удаление *Получателя рассылки* (создатель получателя),
+        заранее до выполнения любого запроса (GET, POST и т.д.)."""
+        recipient = get_object_or_404(Recipient, pk=self.kwargs["pk"])
+        if not request.user == recipient.owner:
+            return HttpResponseForbidden(
+                f"У вас нет прав для удаления Получателя рассылки. Обратитесь к владельцу: {recipient.owner}"
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         """Отправка пользователю уведомления об успешном удалении Получателя из списка рассылки."""
@@ -81,6 +105,10 @@ class MessageListView(LoginRequiredMixin, generic.ListView):
     template_name = "app_mailing/message/message_list.html"
     context_object_name = "app_messages"
 
+    def get_queryset(self):
+        """Ограничение данных по owner, т.е. выводим только те данные, где user==owner."""
+        return Message.objects.filter(owner=self.request.user)
+
 
 class MessageCreateView(LoginRequiredMixin, generic.CreateView):
     """Представление для добавления нового Сообщения рассылки в список."""
@@ -91,8 +119,10 @@ class MessageCreateView(LoginRequiredMixin, generic.CreateView):
     success_url = reverse_lazy("app_mailing:message_list_page")
 
     def form_valid(self, form):
-        """Отправка пользователю уведомления об успешном добавлении нового Сообщения в список рассылки."""
+        """1) Отправка пользователю уведомления об успешном добавлении нового Сообщения в список рассылки.
+        2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Сообщения рассылки*."""
         messages.success(self.request, "Новое сообщение успешно добавлено")
+        form.instance.owner = self.request.user  # Привязываю текущего пользователя как owner
         return super().form_valid(form)
 
 
@@ -103,6 +133,16 @@ class MessageUpdateView(LoginRequiredMixin, generic.UpdateView):
     form_class = AddNewMessageForm
     template_name = "app_mailing/message/message_add_update.html"
     success_url = reverse_lazy("app_mailing:message_list_page")
+
+    def dispatch(self, request, *args, **kwargs):
+        """Метод выполняет проверку прав пользователя на редактирование *Сообщения рассылки* (создатель сообщения),
+        заранее до выполнения любого запроса (GET, POST и т.д.)."""
+        message = get_object_or_404(Message, pk=self.kwargs["pk"])
+        if not request.user == message.owner:
+            return HttpResponseForbidden(
+                f"У вас нет прав для редактирования Сообщения рассылки. Обратитесь к владельцу: {message.owner}"
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         """Отправка пользователю уведомления об успешном редактировании данных Сообщения из списка рассылки."""
@@ -117,6 +157,16 @@ class MessageDeleteView(LoginRequiredMixin, generic.DeleteView):
     template_name = "app_mailing/message/message_delete.html"
     context_object_name = "app_message"
     success_url = reverse_lazy("app_mailing:message_list_page")
+
+    def dispatch(self, request, *args, **kwargs):
+        """Метод выполняет проверку прав пользователя на удаление *Сообщения рассылки* (создатель сообщения),
+        заранее до выполнения любого запроса (GET, POST и т.д.)."""
+        message = get_object_or_404(Message, pk=self.kwargs["pk"])
+        if not request.user == message.owner:
+            return HttpResponseForbidden(
+                f"У вас нет прав для удаления Сообщения рассылки. Обратитесь к владельцу: {message.owner}"
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         """Отправка пользователю уведомления об успешном удалении Сообщения из списка рассылки."""
@@ -135,7 +185,8 @@ class MailingListView(LoginRequiredMixin, generic.ListView):
     context_object_name = "mailings"
 
     def get_queryset(self):
-        """Сортировка по статусу Рассылки: запущена → создана → завершена, внутри по дате окончания."""
+        """1) Сортировка по статусу Рассылки: запущена → создана → завершена, внутри по дате окончания.
+        2) Ограничение данных по owner, т.е. выводим только те данные, где user==owner."""
         # Определяю порядок статусов
         status_order = {
             "launched": 0,
@@ -143,7 +194,7 @@ class MailingListView(LoginRequiredMixin, generic.ListView):
             "accomplished": 2,
         }
 
-        all_mailings = Mailing.objects.all()
+        all_mailings = Mailing.objects.filter(owner=self.request.user)
 
         def sort_key(mailing):
             # Получаю приоритет статуса (если статус не найден - ставлю 3, чтоб он был точно в самом конце списка)
@@ -170,8 +221,10 @@ class MailingCreateView(LoginRequiredMixin, generic.CreateView):
     success_url = reverse_lazy("app_mailing:mailing_list_page")
 
     def form_valid(self, form):
-        """Отправка пользователю уведомления об успешном добавлении новой Рассылки в список."""
+        """1) Отправка пользователю уведомления об успешном добавлении новой Рассылки в список.
+        2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Рассылки*."""
         messages.success(self.request, "Новая рассылка успешно добавлена")
+        form.instance.owner = self.request.user  # Привязываю текущего пользователя как owner
         return super().form_valid(form)
 
 
@@ -182,6 +235,16 @@ class MailingUpdateView(LoginRequiredMixin, generic.UpdateView):
     form_class = AddNewMailingForm
     template_name = "app_mailing/mailing/mailing_add_update.html"
     success_url = reverse_lazy("app_mailing:mailing_list_page")
+
+    def dispatch(self, request, *args, **kwargs):
+        """Метод выполняет проверку прав пользователя на редактирование *Рассылки* (создатель рассылки),
+        заранее до выполнения любого запроса (GET, POST и т.д.)."""
+        mailing = get_object_or_404(Mailing, pk=self.kwargs["pk"])
+        if not request.user == mailing.owner:
+            return HttpResponseForbidden(
+                f"У вас нет прав для редактирования Рассылки. Обратитесь к владельцу: {mailing.owner}"
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         """Отправка пользователю уведомления об успешном редактировании данных Рассылки из списка."""
@@ -196,6 +259,16 @@ class MailingDeleteView(LoginRequiredMixin, generic.DeleteView):
     template_name = "app_mailing/mailing/mailing_delete.html"
     context_object_name = "mailing"
     success_url = reverse_lazy("app_mailing:mailing_list_page")
+
+    def dispatch(self, request, *args, **kwargs):
+        """Метод выполняет проверку прав пользователя на удаление *Рассылки* (создатель рассылки),
+        заранее до выполнения любого запроса (GET, POST и т.д.)."""
+        mailing = get_object_or_404(Mailing, pk=self.kwargs["pk"])
+        if not request.user == mailing.owner:
+            return HttpResponseForbidden(
+                f"У вас нет прав для удаления Рассылки. Обратитесь к владельцу: {mailing.owner}"
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         """Отправка пользователю уведомления об успешном удалении Рассылки."""
@@ -244,7 +317,8 @@ class SendMailingView(LoginRequiredMixin, generic.View):
                     mailing=mailing,
                     recipient=recipient,
                     status="success",
-                    server_response="OK"
+                    server_response="OK",
+                    owner=mailing.owner  # Важно!!! Чтоб автоматически во "owner попытки" записывался "owner рассылки"
                 )
                 success_count += 1
             except Exception as e:
@@ -284,19 +358,21 @@ class MainPageView(LoginRequiredMixin, generic.TemplateView):
             - Общее количество отправленных сообщений + сколько из них именно уникальных текстов сообщений."""
         context = super().get_context_data(**kwargs)
 
+        user = self.request.user  # Определил в переменную нашего владельца, чтоб ниже просто указывать "owner=user"
+
         # ЧАСТЬ 1: Основная статистика по рассылкам из Mailing и получателям из Recipient
-        launched_mailings = Mailing.objects.filter(status="launched")
+        launched_mailings = Mailing.objects.filter(status="launched", owner=user)
         # Кол-во всех существующих рассылок во всех статусах
-        context["total_mailings"] = Mailing.objects.count()
+        context["total_mailings"] = Mailing.objects.filter(owner=user).count()
         # Кол-во активных рассылок + подсчет итогового кол-ва получателей именно по активным рассылкам
         context["active_mailings"] = launched_mailings.count()
         context["active_recipients_count"] = sum(m.recipients.count() for m in launched_mailings)
         # Кол-во всех получателей
-        context["unique_recipients"] = Recipient.objects.count()
+        context["unique_recipients"] = Recipient.objects.filter(owner=user).count()
 
         # ЧАСТЬ 2: Статистика по отправкам из Attempt
-        successful_attempts = Attempt.objects.filter(status="success").count()
-        failed_attempts = Attempt.objects.filter(status="failed").count()
+        successful_attempts = Attempt.objects.filter(status="success", owner=user).count()
+        failed_attempts = Attempt.objects.filter(status="failed", owner=user).count()
         # Кол-во успешных попыток рассылок
         context["successful_attempts"] = successful_attempts
         # Кол-во неуспешных попыток рассылок
@@ -307,6 +383,11 @@ class MainPageView(LoginRequiredMixin, generic.TemplateView):
         # !!!! только в PostgreSQL. ЛУЧШЕ АЛЬТЕРНАТИВНОЕ РЕШЕНИЕ: использовать .values("mailing").distinct().count()
         # !!!! потому что это работает во всех БД, что важно для поддержания кросс-базовой совместимости:
         context["total_sent_messages"] = successful_attempts + failed_attempts
-        context["unique_sent_messages"] = (Attempt.objects.values("mailing").distinct().count())
+        context["unique_sent_messages"] = (Attempt.objects
+                                           .filter(owner=user)
+                                           .values("mailing")
+                                           .distinct()
+                                           .count()
+                                           )
 
         return context

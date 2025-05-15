@@ -60,7 +60,8 @@ class Command(BaseCommand):
                     mailing=mailing,
                     recipient=recipient,
                     status="success",
-                    server_response="OK"
+                    server_response="OK",
+                    owner=mailing.owner  # Важно!!! Чтоб автоматически во "owner попытки" записывался "owner рассылки"
                 )
                 success_count += 1
 

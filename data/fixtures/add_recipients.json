@@ -5,7 +5,8 @@
     "fields": {
       "full_name": "Иванов Иван Иванович",
       "email": "ivanov@gmail.com",
-      "comment": "Проверить активность перед рассылкой"
+      "comment": "Проверить активность перед рассылкой",
+      "owner": 14
     }
   },
   {
@@ -14,7 +15,8 @@
     "fields": {
       "full_name": "Петров Пётр Петрович",
       "email": "petrov@yandex.ru",
-      "comment": "VIP клиент"
+      "comment": "VIP клиент",
+      "owner": 14
     }
   },
   {
@@ -23,7 +25,8 @@
     "fields": {
       "full_name": "Сидорова Мария Алексеевна",
       "email": "sidorova@gmail.com",
-      "comment": "Предпочитает утренние рассылки"
+      "comment": "Предпочитает утренние рассылки",
+      "owner": 14
     }
   },
   {
@@ -32,7 +35,8 @@
     "fields": {
       "full_name": "Кузнецов Алексей Сергеевич",
       "email": "kuznetsov@yandex.ru",
-      "comment": ""
+      "comment": "",
+      "owner": 14
     }
   },
   {
@@ -41,7 +45,8 @@
     "fields": {
       "full_name": "Морозова Анна Владимировна",
       "email": "morozova@gmail.com",
-      "comment": "Не беспокоить по выходным"
+      "comment": "Не беспокоить по выходным",
+      "owner": 14
     }
   },
   {
@@ -50,7 +55,8 @@
     "fields": {
       "full_name": "Васильев Дмитрий Николаевич",
       "email": "vasilev@yandex.ru",
-      "comment": "Тестовая рассылка"
+      "comment": "Тестовая рассылка",
+      "owner": 14
     }
   },
   {
@@ -59,7 +65,8 @@
     "fields": {
       "full_name": "Федорова Елена Игоревна",
       "email": "fedorova@gmail.com",
-      "comment": "Уточнить предпочтения"
+      "comment": "Уточнить предпочтения",
+      "owner": 14
     }
   },
   {
@@ -68,7 +75,8 @@
     "fields": {
       "full_name": "Ковалев Сергей Иванович",
       "email": "kovalev@yandex.ru",
-      "comment": ""
+      "comment": "",
+      "owner": 14
     }
   },
   {
@@ -77,7 +85,8 @@
     "fields": {
       "full_name": "Громова Ольга Петровна",
       "email": "gromova@gmail.com",
-      "comment": "Новичок в списке"
+      "comment": "Новичок в списке",
+      "owner": 14
     }
   },
   {
@@ -86,7 +95,8 @@
     "fields": {
       "full_name": "Егоров Артём Валерьевич",
       "email": "egorov@yandex.ru",
-      "comment": "Важно вовремя доставить"
+      "comment": "Важно вовремя доставить",
+      "owner": 14
     }
   },
   {
@@ -95,7 +105,8 @@
     "fields": {
       "full_name": "Лебедева Татьяна Сергеевна",
       "email": "lebedeva@gmail.com",
-      "comment": ""
+      "comment": "",
+      "owner": 14
     }
   },
   {
@@ -104,7 +115,8 @@
     "fields": {
       "full_name": "Макаров Игорь Евгеньевич",
       "email": "makarov@yandex.ru",
-      "comment": "Обратная связь важна"
+      "comment": "Обратная связь важна",
+      "owner": 14
     }
   },
   {
@@ -113,7 +125,8 @@
     "fields": {
       "full_name": "Захарова Виктория Никитична",
       "email": "zaharova@gmail.com",
-      "comment": "Согласна на тестирование"
+      "comment": "Согласна на тестирование",
+      "owner": 14
     }
   },
   {
@@ -122,7 +135,8 @@
     "fields": {
       "full_name": "Романов Василий Артемович",
       "email": "romanov@yandex.ru",
-      "comment": "Подписан на две рассылки"
+      "comment": "Подписан на две рассылки",
+      "owner": 14
     }
   },
   {
@@ -131,7 +145,8 @@
     "fields": {
       "full_name": "Алексеева Алёна Васильевна",
       "email": "alekseeva@gmail.com",
-      "comment": ""
+      "comment": "",
+      "owner": 14
     }
   },
   {
@@ -140,7 +155,8 @@
     "fields": {
       "full_name": "Григорьев Денис Павлович",
       "email": "grigoriev@yandex.ru",
-      "comment": "Быстро отвечает"
+      "comment": "Быстро отвечает",
+      "owner": 14
     }
   },
   {
@@ -149,7 +165,8 @@
     "fields": {
       "full_name": "Тихонова Наталья Ильинична",
       "email": "tikhonova@gmail.com",
-      "comment": ""
+      "comment": "",
+      "owner": 14
     }
   },
   {
@@ -158,7 +175,8 @@
     "fields": {
       "full_name": "Шестаков Андрей Константинович",
       "email": "shestakov@yandex.ru",
-      "comment": "Активный пользователь"
+      "comment": "Активный пользователь",
+      "owner": 14
     }
   },
   {
@@ -167,7 +185,8 @@
     "fields": {
       "full_name": "Жукова Людмила Георгиевна",
       "email": "zhukova@gmail.com",
-      "comment": "Тестирует бета-версии"
+      "comment": "Тестирует бета-версии",
+      "owner": 14
     }
   },
   {
@@ -176,7 +195,38 @@
     "fields": {
       "full_name": "Орлов Николай Тимофеевич",
       "email": "orlov@yandex.ru",
-      "comment": ""
+      "comment": "",
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 21,
+    "fields": {
+      "full_name": "ТЕСТ С НЕКОРРЕКТНЫМ EMAIL",
+      "email": "v-yandex.ru",
+      "comment": "",
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 22,
+    "fields": {
+      "full_name": "ДЖОН РИЧМОНД (yandex.ru)",
+      "email": "maks.lakovich@yandex.ru",
+      "comment": "",
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.recipient",
+    "pk": 23,
+    "fields": {
+      "full_name": "ДЖОН РИЧМОНД (gmail.com)",
+      "email": "maks.lakovich@gmail.com",
+      "comment": "",
+      "owner": 14
     }
   }
 ]

@@ -1,5 +1,7 @@
 from django.db import models
 
+from config import settings
+
 
 class Recipient(models.Model):
     """Модель *Recipient* представляет "Получателя рассылки" в сервисе управления рассылками."""
@@ -23,6 +25,18 @@ class Recipient(models.Model):
         null=True,
         verbose_name="Комментарий:",
         help_text="Укажите комментарий о получателе",
+    )
+    owner = models.ForeignKey(
+        null=True,  # Разрешаем пустые значения в БД
+        blank=True,  # Разрешаем пустое поле в формах
+        default=None,  # По умолчанию None
+        # Динамически подставляю текущую user модель, чего не делает такой простой вариант как "to=users.models.UserCustomer".
+        # Если мы когда-нибудь изменим AUTH_USER_MODEL в settings.py, модель Recipient автоматически обновится.
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="recipients",
+        verbose_name="Создатель получателя рассылки:",
+        help_text="Пользователь, создавший этого получателя рассылки"
     )
 
     def __str__(self):
@@ -51,6 +65,16 @@ class Message(models.Model):
         null=False,
         verbose_name="Тело письма:",
         help_text="Введите суть письма",
+    )
+    owner = models.ForeignKey(
+        null=True,
+        blank=True,
+        default=None,
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="messages",
+        verbose_name="Создатель сообщения для рассылки:",
+        help_text="Пользователь, создавший это сообщение для рассылки"
     )
 
     def __str__(self):
@@ -114,6 +138,16 @@ class Mailing(models.Model):
         verbose_name="Получатели для рассылки:",
         help_text="Укажите получателей для рассылки",
     )
+    owner = models.ForeignKey(
+        null=True,
+        blank=True,
+        default=None,
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="mailings",
+        verbose_name="Создатель рассылки:",
+        help_text="Пользователь, запустивший эту рассылку"
+    )
 
     def __str__(self):
         """Метод определяет строковое представление объекта. Полезно для отображения объектов в админке/консоли."""
@@ -165,6 +199,16 @@ class Attempt(models.Model):
         related_name="attempts",
         verbose_name="Получатель:",
         help_text="Укажите получателя, которому была отправлена рассылка",
+    )
+    owner = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        default=None,
+        on_delete=models.CASCADE,
+        related_name="attempts",
+        verbose_name="Создатель попытки рассылки:",
+        help_text="Пользователь, которому принадлежит эта попытка"
     )
 
     def __str__(self):
