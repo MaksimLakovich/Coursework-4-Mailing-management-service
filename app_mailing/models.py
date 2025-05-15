@@ -7,7 +7,6 @@ class Recipient(models.Model):
     """Модель *Recipient* представляет "Получателя рассылки" в сервисе управления рассылками."""
 
     email = models.EmailField(
-        unique=True,
         blank=False,
         null=False,
         verbose_name="Почта получателя:",
@@ -48,6 +47,11 @@ class Recipient(models.Model):
         verbose_name_plural = "Получатели"
         ordering = ["email"]
         db_table = "tb_recipient"
+        # Добавляю уникальный "together constraint" - теперь Django будет следить за тем,
+        # чтобы у каждого пользователя email был уникальным, но другие пользователи могут добавить такой же email себе.
+        constraints = [
+            models.UniqueConstraint(fields=["owner", "email"], name="unique_recipient_per_owner")
+        ]
 
 
 class Message(models.Model):

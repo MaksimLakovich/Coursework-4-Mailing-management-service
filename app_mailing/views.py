@@ -220,6 +220,13 @@ class MailingCreateView(LoginRequiredMixin, generic.CreateView):
     template_name = "app_mailing/mailing/mailing_add_update.html"
     success_url = reverse_lazy("app_mailing:mailing_list_page")
 
+    def get_form_kwargs(self):
+        """Метод для передачи request.user в форму для дальнейшего ограничения выбора доступных объектов из БД
+        в выпадающих списках формы *AddNewMailingForm* так, чтобы пользователи видели только свои объекты."""
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
         """1) Отправка пользователю уведомления об успешном добавлении новой Рассылки в список.
         2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Рассылки*."""
@@ -245,6 +252,13 @@ class MailingUpdateView(LoginRequiredMixin, generic.UpdateView):
                 f"У вас нет прав для редактирования Рассылки. Обратитесь к владельцу: {mailing.owner}"
             )
         return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        """Метод для передачи request.user в форму для дальнейшего ограничения выбора доступных объектов из БД
+        в выпадающих списках формы *AddNewMailingForm* так, чтобы пользователи видели только свои объекты."""
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         """Отправка пользователю уведомления об успешном редактировании данных Рассылки из списка."""

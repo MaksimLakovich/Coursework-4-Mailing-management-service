@@ -9,6 +9,7 @@ class AddNewRecipientForm(forms.ModelForm):
     class Meta:
         model = Recipient
         fields = "__all__"
+        exclude = ["owner"]
         widgets = {
             "email": forms.EmailInput(attrs={"placeholder": "Введите email (обязательное поле)"}),
             "full_name": forms.TextInput(attrs={"placeholder": "Введите ФИО (опционально)"}),
@@ -39,6 +40,7 @@ class AddNewMessageForm(forms.ModelForm):
     class Meta:
         model = Message
         fields = "__all__"
+        exclude = ["owner"]
         widgets = {
             "message_subject": forms.TextInput(attrs={"placeholder": "Введите тему письма"}),
             "message_body": forms.Textarea(attrs={"placeholder": "Введите тело письма"}),
@@ -64,6 +66,7 @@ class AddNewMailingForm(forms.ModelForm):
     class Meta:
         model = Mailing
         fields = ["message", "recipients"]
+        exclude = ["owner"]
         widgets = {
             "message": forms.Select(
                 attrs={"class": "form-select text-muted-secondary"}
@@ -74,13 +77,24 @@ class AddNewMailingForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        """Стилизации полей формы с использованием виджета. Виджеты позволяют настроить внешний вид и поведение полей
+        """1) Ограничиваем queryset только объектами текущего пользователя (запрет на вывод всего подряд из БД).
+        2) Стилизации полей формы с использованием виджета. Виджеты позволяют настроить внешний вид и поведение полей
         формы через атрибуты. Это делается с помощью метода attrs.
-            - Переопределяю отображение объектов в select'е, чтоб не выводился из модели текст "Тема письма:"
-            в f"Тема письма: {self.message_subject}"
-            - Убираем параметр 'help_text' со всех полей, чтоб этого больше не было по умолчанию на html-странице."""
+            - Переопределяю отображение объектов в select'е, чтоб не выводился из модели
+            текст "Тема письма:" в f"Тема письма: {self.message_subject}"
+            - Убираем параметр "help_text" со всех полей, чтоб этого больше не было по
+            умолчанию на html-странице."""
+        # Забираю пользователя из kwargs, чтоб потом по нему ограничить доступ только к его объектам из БД.
+        user = kwargs.pop("user", None)
+
         super().__init__(*args, **kwargs)
 
+        # ШАГ 1: Ограничиваю queryset только объектами текущего пользователя:
+        if user:
+            self.fields["message"].queryset = Message.objects.filter(owner=user)
+            self.fields["recipients"].queryset = Recipient.objects.filter(owner=user)
+
+        # ШАГ 2: Выполняю стилизацию формы
         def get_message_subject(obj):
             return obj.message_subject
 
