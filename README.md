@@ -437,6 +437,13 @@
    python manage.py send_mailing 1
    ```
 
+## _Приложение "users" (users/management/commands/):_
+
+1) `create_groups.py` - команда для создания группы *Менеджер сервиса* со всеми *view-доступами* ко всем моделям.
+   - Команда для запуска:
+   ``` commandline
+   python manage.py create_groups
+   ```
 
 
 
