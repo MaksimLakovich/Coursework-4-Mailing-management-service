@@ -1,6 +1,6 @@
 from django import forms
 
-from app_mailing.models import Recipient, Message, Mailing
+from app_mailing.models import Mailing, Message, Recipient
 
 
 class AddNewRecipientForm(forms.ModelForm):
@@ -15,6 +15,28 @@ class AddNewRecipientForm(forms.ModelForm):
             "full_name": forms.TextInput(attrs={"placeholder": "Введите ФИО (опционально)"}),
             "comment": forms.Textarea(attrs={"placeholder": "Введите комментарий (опционально)"}),
         }
+
+    def clean_email(self):
+        """Метод для валидации email: проверяет, существует ли уже получатель с таким email у текущего
+        пользователя (owner). Если да - не позволяет повторно добавить этого получателя.
+        Это предотвращает дублирование одного и того же email в списке клиента приложения, но разрешает другим
+        пользователям добавлять такого же получателя себе."""
+        # Беру значение, которое пользователь ввёл в поле "Email" (после коробочной проверки, что email валидный).
+        email = self.cleaned_data["email"]
+
+        # Получаю владельца (того, кто создаёт или редактирует получателя):
+        # 1) self.instance.owner - работает, если мы редактируем существующего получателя.
+        # 2) self.initial.get("owner") - работает, если мы только создаём нового получателя.
+        owner = self.instance.owner or self.initial.get("owner")
+
+        # 1) Recipient.objects.filter(owner=owner, email=email) - тут ищу в БД, а есть ли у этого пользователя
+        # получатель с таким email или нет?
+        # 2) .exclude(pk=self.instance.pk) - тут исключаю из поиска сам объект, если он уже есть (например, если
+        # пользователь редактирует получателя - сравнивать с самим собой не надо, иначе будет замкнутый круг при
+        # редактировании любого получателя.
+        if owner and Recipient.objects.filter(owner=owner, email=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("У вас уже есть получатель с таким email.")
+        return email
 
     def __init__(self, *args, **kwargs):
         """Стилизации полей формы с использованием виджета. Виджеты позволяют настроить внешний вид и поведение полей
@@ -72,7 +94,7 @@ class AddNewMailingForm(forms.ModelForm):
                 attrs={"class": "form-select text-muted-secondary"}
             ),
             "recipients": forms.SelectMultiple(
-                attrs={"class": "duallistbox form-control", "multiple": "multiple",}
+                attrs={"class": "duallistbox form-control", "multiple": "multiple", }
             ),
         }
 

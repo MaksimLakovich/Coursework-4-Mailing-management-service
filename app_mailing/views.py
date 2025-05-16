@@ -37,6 +37,14 @@ class RecipientCreateView(LoginRequiredMixin, generic.CreateView):
     template_name = "app_mailing/recipient/recipient_add_update.html"
     success_url = reverse_lazy("app_mailing:recipient_list_page")
 
+    def get_form_kwargs(self):
+        """Метод для передачи в форму информации о текущем пользователе (владелец - owner), чтобы метод clean_email,
+         который я добавил в самой форме (AddNewRecipientForm) мог корректно проверять уникальность email по владельцу.
+         Без этого clean_email в форме (AddNewRecipientForm) не сможет определить, кому принадлежит объект."""
+        kwargs = super().get_form_kwargs()
+        kwargs["initial"] = {"owner": self.request.user}
+        return kwargs
+
     def form_valid(self, form):
         """1) Отправка пользователю уведомления об успешном добавлении нового Получателя в список рассылки.
         2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Получателя рассылки*."""
