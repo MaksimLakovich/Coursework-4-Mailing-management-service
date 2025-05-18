@@ -31,18 +31,22 @@
         </thead>
         <tbody>
             {% for recipient in recipients %}
-            <tr>
+            <tr class="{% if user != recipient.owner %}table-secondary{% endif %}">
                 <th class="text-center" scope="row">{{ forloop.counter }}</th>
                 <td>{{ recipient.full_name }}</td>
                 <td><strong>{{ recipient.email }}</strong></td>
                 <td>{{ recipient.comment|default:"—" }}</td>
                 <td class="text-center">
+                    {% if user == recipient.owner %}
                     <a href="{% url 'app_mailing:recipient_update_page' recipient.pk %}" class="btn btn-sm btn-warning me-1">
                         <i class="fas fa-edit"></i>
                     </a>
                     <a href="{% url 'app_mailing:recipient_delete_page' recipient.pk %}" class="btn btn-sm btn-danger">
                         <i class="fas fa-trash-alt"></i>
                     </a>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}

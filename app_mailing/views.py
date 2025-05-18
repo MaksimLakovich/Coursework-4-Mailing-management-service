@@ -25,8 +25,15 @@ class RecipientListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         """1) Сортировка по ФИО (в алфавитном порядке).
-        2) Ограничение данных по owner, т.е. выводим только те данные, где user==owner."""
-        return Recipient.objects.filter(owner=self.request.user).order_by("full_name")
+        2) Ограничение данных по owner, т.е. выводим только те данные, где user==owner.
+        3) Если пользователь входит в группу 'Менеджер сервиса', то выводим абсолютно все данные из БД."""
+        qs = Recipient.objects.all()
+
+        # Если у пользователя НЕТ системного разрешения на просмотр всех объектов - показываем только его объекты.
+        if not self.request.user.groups.filter(name="Менеджер сервиса").exists():
+            qs = qs.filter(owner=self.request.user).order_by("full_name")
+        # Иначе показываем все.
+        return qs.order_by("full_name")
 
 
 class RecipientCreateView(LoginRequiredMixin, generic.CreateView):
