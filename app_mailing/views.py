@@ -201,7 +201,8 @@ class MailingListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         """1) Сортировка по статусу Рассылки: запущена → создана → завершена, внутри по дате окончания.
-        2) Ограничение данных по owner, т.е. выводим только те данные, где user==owner."""
+        2) Ограничение данных по owner, т.е. выводим только те данные, где user==owner.
+        3) Если пользователь входит в группу 'Менеджер сервиса', то выводим абсолютно все данные из БД."""
         # Определяю порядок статусов
         status_order = {
             "launched": 0,
@@ -209,7 +210,8 @@ class MailingListView(LoginRequiredMixin, generic.ListView):
             "accomplished": 2,
         }
 
-        all_mailings = Mailing.objects.filter(owner=self.request.user)
+        # Получаю весь объем данных из БД
+        qs = Mailing.objects.all()
 
         def sort_key(mailing):
             # Получаю приоритет статуса (если статус не найден - ставлю 3, чтоб он был точно в самом конце списка)
@@ -222,8 +224,14 @@ class MailingListView(LoginRequiredMixin, generic.ListView):
                 timestamp = 0
             return (status_priority, -timestamp)  # Возвращаю кортеж: сначала статус, потом минус время (для убывания)
 
-        # Сортирую с помощью созданного sort_key() и возвращаю отсортированный список
-        sorted_mailings = sorted(all_mailings, key=sort_key)
+        # Если у пользователя НЕТ системного разрешения на просмотр всех объектов - показываем только его объекты.
+        if not self.request.user.groups.filter(name="Менеджер сервиса").exists():
+            # 1) Выбираю с помощью фильтра данные, где пользователь является владельцем (owner=self.request.user)
+            # 2) Сортирую с помощью созданного sort_key() и возвращаю отсортированный список
+            sorted_mailings = sorted(qs.filter(owner=self.request.user), key=sort_key)
+            return sorted_mailings
+            # Иначе показываем все с сортировкой с помощью созданного sort_key()
+        sorted_mailings = sorted(qs, key=sort_key)
         return sorted_mailings
 
 

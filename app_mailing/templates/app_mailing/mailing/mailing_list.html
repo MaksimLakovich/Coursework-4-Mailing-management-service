@@ -37,7 +37,7 @@
         <!-- Содержимое таблицы -->
         <tbody>
         {% for mailing in mailings %}
-        <tr>
+        <tr class="{% if user != mailing.owner %}table-secondary{% endif %}">
 
             <!-- Нумерация, дата запуска, дата окончания -->
             <th class="text-center" scope="row">{{ forloop.counter }}</th>
@@ -46,31 +46,38 @@
 
             <!-- Статус рассылки -->
             <td class="text-center">
-
                 {% if mailing.status == "launched" %}
-                <span class="text-success fw-bold">{{ mailing.get_status_display }}</span>
+                    <span class="text-success fw-bold">{{ mailing.get_status_display }}</span>
 
                 {% elif mailing.status == "accomplished" %}
-                <span class="text-secondary fw-bold">{{ mailing.get_status_display }}</span>
+                    <span class="text-secondary fw-bold">{{ mailing.get_status_display }}</span>
 
                 {% elif mailing.status == "created" %}
-                <span class="fw-bold">{{ mailing.get_status_display }}</span>
-                <!-- Кнопка ЗАПУСТИТЬ для статуса СОЗДАНА -->
-                <div>
-                    <form method="post" action="{% url 'app_mailing:start_mailing_page' mailing.pk %}" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-success me-1">
-                            <i class="fas fa-play"></i> Запустить
-                        </button>
-                    </form>
-                </div>
+                    <span class="fw-bold">{{ mailing.get_status_display }}</span>
+
+                    <!-- Кнопка ЗАПУСТИТЬ для статуса СОЗДАНА -->
+                    {% if user == mailing.owner %}
+                        <div>
+                            <form method="post" action="{% url 'app_mailing:start_mailing_page' mailing.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success me-1">
+                                    <i class="fas fa-play"></i> Запустить
+                                </button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="text-muted small fst-italic mt-1">
+                            (запустить может только создатель рассылки)
+                        </div>
+                    {% endif %}
 
                 {% else %}
-                {{ mailing.get_status_display }}
+                    {{ mailing.get_status_display }}
+
                 {% endif %}
             </td>
 
-            <!-- Сообщение -->
+            <!-- Сообщение рассылки-->
             <td>{{ mailing.message.message_subject|default:"—" }}</td>
 
             <!-- Получатели -->
@@ -106,6 +113,8 @@
             <!--            </td>-->
 
             <!-- Кнопки действия -->
+            {% if user == mailing.owner %}
+
             {% if mailing.status == "launched" %}
             <td class="text-center">
                 <a href="#" class="btn btn-sm btn-secondary disabled">
@@ -126,6 +135,11 @@
                 </a>
             </td>
             {% endif %}
+
+            {% else %}
+            <td class="text-center text-muted">-</td>
+            {% endif %}
+
         </tr>
 
         {% empty %}
