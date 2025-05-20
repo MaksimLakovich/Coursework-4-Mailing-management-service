@@ -19,9 +19,10 @@
             <th scope="col">Почта</th>
             <th scope="col">Имя</th>
             <th scope="col">Фамилия</th>
-            <th scope="col">Active</th>
-            <th scope="col">Staff</th>
-            <th scope="col">Superuser</th>
+            <th scope="col">Active?</th>
+            <th scope="col">Blocked?</th>
+            <th scope="col">Staff?</th>
+            <th scope="col">Superuser?</th>
             <th scope="col">Группы</th>
             <th scope="col">Разрешения</th>
             <th scope="col">Дата последнего входа</th>
@@ -36,9 +37,34 @@
             <td>{{ app_user.email }}</td>
             <td>{{ app_user.first_name|default:"—" }}</td>
             <td>{{ app_user.last_name|default:"—" }}</td>
-            <td>{{ app_user.is_active }}</td>
-            <td>{{ app_user.is_staff }}</td>
-            <td>{{ app_user.is_superuser }}</td>
+            <td class="text-center">
+                {% if app_user.is_active %}
+                <span class="text-success">✅</span>
+                {% else %}
+                <span class="text-danger">❌</span>
+                {% endif %}
+            </td>
+            <td class="text-center">
+                {% if app_user.is_blocked %}
+                <span class="text-danger">Блок</span>
+                {% else %}
+                <span>—</span>
+                {% endif %}
+            </td>
+            <td class="text-center">
+                {% if app_user.is_staff %}
+                <span class="text-success">✅</span>
+                {% else %}
+                <span class="text-danger">❌</span>
+                {% endif %}
+            </td>
+            <td class="text-center">
+                {% if app_user.is_superuser %}
+                <span class="text-success">✅</span>
+                {% else %}
+                <span class="text-danger">❌</span>
+                {% endif %}
+            </td>
             <td>
                 {% with user_groups=app_user.groups.all %}
                 {% if user_groups %}
@@ -62,8 +88,8 @@
             <td>{{ app_user.last_login }}</td>
             <td>{{ app_user.date_joined }}</td>
             <td class="text-center">
-                <a href="{#}" class="btn btn-sm btn-danger">
-                    <i class="fas fa-trash-alt"></i>
+                <a href="{#}" class="btn btn-sm btn-secondary">
+                    <i class="fas fa-pause"></i>
                 </a>
             </td>
         </tr>

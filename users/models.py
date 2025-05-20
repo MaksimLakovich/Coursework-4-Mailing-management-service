@@ -23,6 +23,12 @@ class AppUser(AbstractUser):
         help_text="Загрузите аватар",
     )
 
+    is_blocked = models.BooleanField(
+        default=False,
+        verbose_name="Статус блокировки пользователя:",
+        help_text="Укажите заблокирован или нет пользователь",
+    )
+
     objects = AppUserManager()  # Указываю кастомный менеджер для пользователя без поля username.
 
     USERNAME_FIELD = "email"
@@ -39,4 +45,5 @@ class AppUser(AbstractUser):
         db_table = "tb_app_users"
         permissions = [
             ("can_see_list_user", "Может видеть список пользователей сервиса"),
+            ("can_block_user", "Может блокировать пользователей сервиса"),
         ]
