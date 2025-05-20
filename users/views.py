@@ -4,6 +4,7 @@ import os
 from django.contrib import messages
 # login - логин пользователя после активации, а get_user_model - получение нашей кастомной модели пользователя
 from django.contrib.auth import get_user_model, login
+from django.contrib.auth.mixins import LoginRequiredMixin
 # default_token_generator - генератор безопасных токенов Django для подтверждения email:
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
@@ -11,6 +12,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.sites.shortcuts import get_current_site
 # send_mail - отправка email через системный smtp/email backend:
 from django.core.mail import send_mail
+from django.http import HttpResponseForbidden
 from django.shortcuts import redirect
 # render_to_string - загружаю HTML-шаблон письма и заменяю в нем переменные:
 from django.template.loader import render_to_string
@@ -21,10 +23,14 @@ from django.utils.encoding import force_bytes
 # urlsafe_base64_decode - декодирует UID из ссылки обратно в ID:
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 # Для подтверждения email нам нужен базовый класс представления - View (не FormView)
-from django.views import View
+from django.views import View, generic
 from django.views.generic import FormView, TemplateView
 
 from users.forms import AppUserLoginForm, AppUserRegistrationForm
+from users.models import AppUser
+
+# 1. Контроллеры для регистрации и аутентификации пользователей, для подтверждения своего email для входа и выхода
+# из системы, а также для восстановления пароля
 
 
 class UserStartView(TemplateView):
@@ -169,3 +175,22 @@ class UserLoginView(LoginView):
         """Автоматический вход пользователя после успешной аутентификации."""
         login(self.request, form.get_user())
         return super().form_valid(form)
+
+
+# 2. Контроллеры для пользователей "Менеджер сервиса"
+
+class AppUserListView(LoginRequiredMixin, generic.ListView):
+    """Представление для отображения списка *Пользователей сервиса*."""
+
+    model = AppUser
+    template_name = ("users/app_users/user_list.html")
+    context_object_name = "app_users"
+
+    def dispatch(self, request, *args, **kwargs):
+        """Метод проверяет, имеет ли текущий пользователь право 'can_see_list_user' на просмотр списка пользователей.
+        Если не имеет - возвращает запрет доступа (403 Forbidden).
+        Эта проверка выполняется до обработки любого типа запроса (GET, POST и т.д.), гарантируя безопасность доступа
+        ко всем методам представления."""
+        if not request.user.has_perm("users.can_see_list_user"):
+            return HttpResponseForbidden("У вас нет прав на просмотр списка пользователей сервиса.")
+        return super().dispatch(request, *args, **kwargs)

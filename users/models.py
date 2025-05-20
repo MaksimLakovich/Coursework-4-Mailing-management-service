@@ -37,3 +37,6 @@ class AppUser(AbstractUser):
         verbose_name_plural = "Пользователи"
         ordering = ["email"]
         db_table = "tb_app_users"
+        permissions = [
+            ("can_see_list_user", "Может видеть список пользователей сервиса"),
+        ]

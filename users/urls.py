@@ -2,8 +2,9 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.views import LogoutView
 from django.urls import path, reverse_lazy
 
-from users.views import (ActivateAccountView, UserEmailConfirmationSentView,
-                         UserLoginView, UserRegisterView, UserStartView)
+from users.views import (ActivateAccountView, AppUserListView,
+                         UserEmailConfirmationSentView, UserLoginView,
+                         UserRegisterView, UserStartView)
 
 app_name = "users"
 
@@ -14,6 +15,7 @@ urlpatterns = [
     path("email-confirmation-sent/", UserEmailConfirmationSentView.as_view(), name="email_confirmation_sent_page"),
     path("login/", UserLoginView.as_view(), name="login_page"),
     path("logout/", LogoutView.as_view(), name="logout_page"),
+    path("app-users/", AppUserListView.as_view(), name="user_list_page"),
 
     # Часть для сброса пароля с использованием коробочного решения auth_views
     path(

@@ -1,0 +1,79 @@
+{% extends 'app_mailing/base.html' %}
+
+{% block title %}Пользователей сервиса{% endblock %}
+
+{% block content %}
+
+<!-- Заголовок страницы -->
+<div class="text-center my-5">
+    <h2 class="fw-bold">Список пользователей сервиса</h2>
+    <p class="text-muted">Страница менеджера сервиса для управления пользователями приложения</p>
+</div>
+
+<!-- Таблица -->
+<div class="table-responsive">
+    <table class="table table-hover align-middle table-bordered shadow-sm">
+        <thead class="table-dark text-center align-middle">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Почта</th>
+            <th scope="col">Имя</th>
+            <th scope="col">Фамилия</th>
+            <th scope="col">Active</th>
+            <th scope="col">Staff</th>
+            <th scope="col">Superuser</th>
+            <th scope="col">Группы</th>
+            <th scope="col">Разрешения</th>
+            <th scope="col">Дата последнего входа</th>
+            <th scope="col">Дата регистрации</th>
+            <th scope="col">Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for app_user in app_users %}
+        <tr>
+            <th class="text-center" scope="row">{{ forloop.counter }}</th>
+            <td>{{ app_user.email }}</td>
+            <td>{{ app_user.first_name|default:"—" }}</td>
+            <td>{{ app_user.last_name|default:"—" }}</td>
+            <td>{{ app_user.is_active }}</td>
+            <td>{{ app_user.is_staff }}</td>
+            <td>{{ app_user.is_superuser }}</td>
+            <td>
+                {% with user_groups=app_user.groups.all %}
+                {% if user_groups %}
+                    {{ app_user.groups.all|join:", " }}
+                {% else %}
+                —
+                {% endif %}
+                {% endwith %}
+            </td>
+            <td>
+                {% with perms=app_user.user_permissions.all %}
+                {% if perms %}
+                    {% for perm in perms %}
+                        {{ perm.name }}<br>
+                    {% endfor %}
+                {% else %}
+                —
+                {% endif %}
+                {% endwith %}
+</td>
+            <td>{{ app_user.last_login }}</td>
+            <td>{{ app_user.date_joined }}</td>
+            <td class="text-center">
+                <a href="{#}" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash-alt"></i>
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center text-muted py-4">Пока нет пользователей приложения</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

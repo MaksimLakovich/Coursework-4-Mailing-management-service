@@ -115,27 +115,33 @@
             <!-- Кнопки действия -->
             {% if user == mailing.owner %}
 
-            {% if mailing.status == "launched" %}
+                {% if mailing.status == "launched" %}
+                <td class="text-center">
+                    <a href="#" class="btn btn-sm btn-secondary disabled">
+                        <i class="fas fa-stop"></i>
+                    </a>
+                </td>
+                {% elif mailing.status == "accomplished" %}
+                <td class="text-center text-muted">
+                    —
+                </td>
+                {% elif mailing.status == "created" %}
+                <td class="text-center">
+                    <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                </td>
+                {% endif %}
+
+            {% elif mailing.status == "launched" %}
             <td class="text-center">
                 <a href="#" class="btn btn-sm btn-secondary disabled">
                     <i class="fas fa-stop"></i>
                 </a>
             </td>
-            {% elif mailing.status == "accomplished" %}
-            <td class="text-center text-muted">
-                —
-            </td>
-            {% elif mailing.status == "created" %}
-            <td class="text-center">
-                <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1">
-                    <i class="fas fa-trash-alt"></i>
-                </a>
-            </td>
-            {% endif %}
-
             {% else %}
             <td class="text-center text-muted">-</td>
             {% endif %}
