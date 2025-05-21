@@ -117,9 +117,14 @@
 
                 {% if mailing.status == "launched" %}
                 <td class="text-center">
-                    <a href="#" class="btn btn-sm btn-secondary disabled">
-                        <i class="fas fa-stop"></i>
-                    </a>
+                    <div>
+                        <form method="post" action="{% url 'app_mailing:stop_mailing_page' mailing.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-stop"></i>
+                            </button>
+                        </form>
+                    </div>
                 </td>
                 {% elif mailing.status == "accomplished" %}
                 <td class="text-center text-muted">

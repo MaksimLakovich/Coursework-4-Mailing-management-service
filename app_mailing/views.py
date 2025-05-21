@@ -12,6 +12,7 @@ from django.views import generic
 from app_mailing.forms import (AddNewMailingForm, AddNewMessageForm,
                                AddNewRecipientForm)
 from app_mailing.models import Attempt, Mailing, Message, Recipient
+from app_mailing.services import stop_mailing
 
 # 1. Контроллеры для "Управление клиентами"
 
@@ -372,6 +373,26 @@ class SendMailingView(LoginRequiredMixin, generic.View):
         mailing.save()
 
         messages.success(request, f"Рассылка успешно отправлена {success_count} получателям.")
+        return redirect("app_mailing:mailing_list_page")
+
+
+class StopMailingView(LoginRequiredMixin, generic.View):
+    """Представление для остановки выбранной пользователем *Рассылки* вручную через интерфейс
+    и фиксации остановки *Попыток рассылок* по каждому *Получателю* из рассылки, которые еще не были отправлены."""
+
+    def post(self, request, pk):
+        """POST-запрос инициирует остановку рассылки:
+        - Завершает рассылку.
+        - Фиксирует "неудачные" попытки рассылки по оставшимся получателям.
+        - Возвращает пользователя на список рассылок."""
+        mailing = get_object_or_404(Mailing, pk=pk)
+
+        if request.user != mailing.owner:
+            return HttpResponseForbidden("Вы не можете останавливать чужую рассылку.")
+
+        stop_mailing(mailing, reason="Пользователь вручную остановил рассылку")
+
+        messages.success(request, "Рассылка была успешно остановлена.")
         return redirect("app_mailing:mailing_list_page")
 
 
