@@ -113,44 +113,30 @@
             <!--            </td>-->
 
             <!-- Кнопки действия -->
-            {% if user == mailing.owner %}
-
-                {% if mailing.status == "launched" %}
+            {% if user == mailing.owner or perms.users.can_block_user %}
                 <td class="text-center">
-                    <div>
-                        <form method="post" action="{% url 'app_mailing:stop_mailing_page' mailing.pk %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-secondary">
-                                <i class="fas fa-stop"></i>
-                            </button>
-                        </form>
-                    </div>
-                </td>
-                {% elif mailing.status == "accomplished" %}
-                <td class="text-center text-muted">
-                    —
-                </td>
-                {% elif mailing.status == "created" %}
-                <td class="text-center">
+                    {% if mailing.status == "launched" %}
+                    <form method="post" action="{% url 'app_mailing:stop_mailing_page' mailing.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-secondary">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </form>
+                    {% elif mailing.status == "created" and user == mailing.owner %}
                     <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
                         <i class="fas fa-edit"></i>
                     </a>
                     <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1">
                         <i class="fas fa-trash-alt"></i>
                     </a>
+                    {% else %}
+                    <span class="text-muted">
+                        —
+                    </span>
+                    {% endif %}
                 </td>
-                {% endif %}
-
-            {% elif mailing.status == "launched" %}
-            <td class="text-center">
-                <a href="#" class="btn btn-sm btn-secondary">
-                    <i class="fas fa-stop"></i>
-                </a>
-            </td>
             {% else %}
-            <td class="text-center text-muted">
-                —
-            </td>
+                <td class="text-center text-muted">—</td>
             {% endif %}
 
         </tr>
