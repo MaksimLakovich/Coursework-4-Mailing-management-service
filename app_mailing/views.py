@@ -1,18 +1,14 @@
-import os
-
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.mail import send_mail
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.utils import timezone
 from django.views import generic
 
 from app_mailing.forms import (AddNewMailingForm, AddNewMessageForm,
                                AddNewRecipientForm)
 from app_mailing.models import Attempt, Mailing, Message, Recipient
-from app_mailing.services import stop_mailing
+from app_mailing.services import send_mailing, stop_mailing
 
 # 1. Контроллеры для "Управление клиентами"
 
@@ -319,60 +315,11 @@ class SendMailingView(LoginRequiredMixin, generic.View):
     и фиксации *Попыток рассылок* по каждому *Получателю* из рассылки."""
 
     def post(self, request, pk):
-        """1) Отправка email всем получателям в выбранной *Рассылке*.
-        2) Фиксация *Попыток рассылок* по каждому получателю."""
+        """Метод запускает сервисную функцию *send_mailing()* из services.py, которая:
+        1) Отправляет email всем получателям в выбранной *Рассылке*.
+        2) Фиксирует *Попытки рассылок* по каждому получателю."""
         mailing = get_object_or_404(Mailing, pk=pk)
-
-        if mailing.status != "created":
-            messages.warning(request, "Эту рассылку нельзя повторно запустить.")
-            return redirect("app_mailing:mailing_list_page")
-
-        recipients = mailing.recipients.all()
-        if not recipients.exists():
-            messages.warning(request, "У этой рассылки нет получателей.")
-            return redirect("app_mailing:mailing_list_page")
-
-        subject = mailing.message.message_subject
-        message = mailing.message.message_body
-        from_email = os.getenv("YANDEX_EMAIL_HOST_USER")
-
-        mailing.status = "launched"  # Меняю статус рассылки, что она запущена
-        mailing.first_message_sending = timezone.now()  # Фиксирую дату начала
-        mailing.save()
-
-        success_count = 0
-
-        for recipient in recipients:  # Запускаю рассылку по всем получателям
-            try:
-                send_mail(
-                    subject=subject,
-                    message=message,
-                    from_email=from_email,
-                    recipient_list=[recipient.email],
-                    fail_silently=False,
-                )
-                Attempt.objects.create(
-                    mailing=mailing,
-                    recipient=recipient,
-                    status="success",
-                    server_response="OK",
-                    owner=mailing.owner  # Важно!!! Чтоб автоматически во "owner попытки" записывался "owner рассылки"
-                )
-                success_count += 1
-            except Exception as e:
-                Attempt.objects.create(
-                    mailing=mailing,
-                    recipient=recipient,
-                    status="failed",
-                    server_response=str(e)
-                )
-                print(f"Ошибка при отправке письма на {recipient.email}: {e}")
-
-        mailing.end_message_sending = timezone.now()  # Фиксирую дату окончания
-        mailing.status = "accomplished"  # Меняю статус рассылки после завершения
-        mailing.save()
-
-        messages.success(request, f"Рассылка успешно отправлена {success_count} получателям.")
+        send_mailing(request, mailing)
         return redirect("app_mailing:mailing_list_page")
 
 
