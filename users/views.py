@@ -13,7 +13,7 @@ from django.contrib.sites.shortcuts import get_current_site
 # send_mail - отправка email через системный smtp/email backend:
 from django.core.mail import send_mail
 from django.http import HttpResponseForbidden
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 # render_to_string - загружаю HTML-шаблон письма и заменяю в нем переменные:
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
@@ -26,8 +26,11 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View, generic
 from django.views.generic import FormView, TemplateView
 
+from app_mailing.models import Mailing
+from app_mailing.services import stop_mailing
 from users.forms import AppUserLoginForm, AppUserRegistrationForm
 from users.models import AppUser
+from users.services import block_user, unblock_user
 
 # 1. Контроллеры для регистрации и аутентификации пользователей, для подтверждения своего email для входа и выхода
 # из системы, а также для восстановления пароля
@@ -194,3 +197,58 @@ class AppUserListView(LoginRequiredMixin, generic.ListView):
         if not request.user.has_perm("users.can_see_list_user"):
             return HttpResponseForbidden("У вас нет прав на просмотр списка пользователей сервиса.")
         return super().dispatch(request, *args, **kwargs)
+
+
+class BlockUserView(LoginRequiredMixin, generic.View):
+    """Представление для блокировки Пользователя менеджером сервиса.
+    Влечёт за собой:
+        - ограничения на создание/изменение рассылок и их запуск.
+        - автоматическую остановку ранее запущенных пользователем *Рассылок*.
+        - автоматическую фиксацию остановки *Попыток рассылок* по каждому *Получателю* из рассылки, которые
+        еще не были отправлены."""
+
+    def dispatch(self, request, *args, **kwargs):
+        """Метод проверяет, имеет ли текущий пользователь право 'can_block_user' на блокировку пользователей.
+        Если не имеет - возвращает запрет доступа (403 Forbidden).
+        Выполняется до обработки любого запроса, обеспечивая защиту на всех уровнях."""
+        if not request.user.has_perm("users.can_block_user"):
+            return HttpResponseForbidden("У вас нет прав на блокировку пользователей сервиса.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk):
+        """Метод инициирует блокировку пользователя и остановку активных рассылок:
+        - Получает объект пользователя по ID.
+        - Устанавливает is_blocked = True.
+        - Принудительно завершает все рассылки со статусом "launched".
+        - Каждая из рассылок переводится в "accomplished", а оставшиеся письма считаются неудачными."""
+        app_user = get_object_or_404(AppUser, pk=pk)
+        block_user(app_user)
+        launched_mailings = Mailing.objects.filter(status="launched", owner=app_user)
+
+        for mailing in launched_mailings:
+            stop_mailing(mailing, reason="Пользователь заблокирован")
+
+        return redirect("users:user_list_page")
+
+
+class UnblockUserView(LoginRequiredMixin, generic.View):
+    """Представление для разблокировки Пользователя менеджером сервиса.
+    Влечёт за собой:
+        - снятие ограничения на создание/изменение рассылок и их запуск."""
+
+    def dispatch(self, request, *args, **kwargs):
+        """Метод проверяет, имеет ли текущий пользователь право 'can_block_user' на разблокировку пользователей.
+        Если не имеет - возвращает запрет доступа (403 Forbidden).
+        Выполняется до обработки любого запроса, обеспечивая защиту на всех уровнях."""
+        if not request.user.has_perm("users.can_block_user"):
+            return HttpResponseForbidden("У вас нет прав на разблокировку пользователей сервиса.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, pk):
+        """Метод инициирует разблокировку пользователя и снятие ограничений с него:
+        - Получает объект пользователя по ID.
+        - Устанавливает is_blocked = False."""
+        app_user = get_object_or_404(AppUser, pk=pk)
+        unblock_user(app_user)
+
+        return redirect("users:user_list_page")

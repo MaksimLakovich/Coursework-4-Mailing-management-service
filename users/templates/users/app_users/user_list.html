@@ -84,13 +84,25 @@
                 —
                 {% endif %}
                 {% endwith %}
-</td>
+            </td>
             <td>{{ app_user.last_login }}</td>
             <td>{{ app_user.date_joined }}</td>
             <td class="text-center">
-                <a href="{#}" class="btn btn-sm btn-secondary">
-                    <i class="fas fa-pause"></i>
-                </a>
+                {% if not app_user.is_blocked %}
+                <form method="post" action="{% url 'users:block_user_page' app_user.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-secondary" title="Заблокировать">
+                        <i class="fas fa-pause"></i>
+                    </button>
+                </form>
+                {% else %}
+                <form method="post" action="{% url 'users:unblock_user_page' app_user.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-secondary" title="Разблокировать">
+                        <i class="fas fa-play"></i>
+                    </button>
+                </form>
+                {% endif %}
             </td>
         </tr>
         {% empty %}
