@@ -492,11 +492,15 @@
 
 ## _Приложение "users" (users/management/commands/):_
 
-1) `create_groups.py` - команда для создания группы *Менеджер сервиса* со всеми *view-доступами* ко всем моделям.
+1) `create_groups.py` - команда для создания группы *Менеджер сервиса* с правами:
+   - все *view-доступы* ко всем моделям.
+   - кастомные права:
+     - право *can_see_list_user*.
+     - право *can_block_user*.
    - Команда для запуска:
-   ``` commandline
-   python manage.py create_groups
-   ```
+     ``` commandline
+     python manage.py create_groups
+     ```
 
 
 

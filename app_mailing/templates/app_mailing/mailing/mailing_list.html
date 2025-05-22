@@ -12,9 +12,15 @@
 
 <!-- Кнопка добавления -->
 <div class="d-flex justify-content-end mb-4">
+    {% if not user.is_blocked %}
     <a href="{% url 'app_mailing:mailing_add_page' %}" class="btn btn-success shadow-sm">
         <i class="fas fa-plus me-2"></i>Добавить рассылку
     </a>
+    {% else %}
+    <div class="alert alert-danger text-center mt-3">
+        Вы заблокированы. Обратитесь к менеджеру: +1 342 932 2345
+    </div>
+    {% endif %}
 </div>
 
 <!-- Таблица -->
@@ -60,9 +66,15 @@
                         <div>
                             <form method="post" action="{% url 'app_mailing:start_mailing_page' mailing.pk %}" class="d-inline">
                                 {% csrf_token %}
+                                {% if not user.is_blocked %}
                                 <button type="submit" class="btn btn-sm btn-success me-1">
                                     <i class="fas fa-play"></i> Запустить
                                 </button>
+                                {% else %}
+                                <button type="submit" class="btn btn-sm btn-success me-1 disabled">
+                                    <i class="fas fa-play"></i> Запустить
+                                </button>
+                                {% endif %}
                             </form>
                         </div>
                     {% else %}
@@ -123,12 +135,21 @@
                         </button>
                     </form>
                     {% elif mailing.status == "created" and user == mailing.owner %}
-                    <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
-                        <i class="fas fa-edit"></i>
-                    </a>
-                    <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1">
-                        <i class="fas fa-trash-alt"></i>
-                    </a>
+                        {% if not user.is_blocked %}
+                            <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        {% else %}
+                            <a href="#" class="btn btn-sm btn-warning me-1 disabled">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-danger me-1 disabled">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        {% endif %}
                     {% else %}
                     <span class="text-muted">
                         —
