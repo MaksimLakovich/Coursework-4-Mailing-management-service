@@ -9,10 +9,14 @@ from app_mailing.forms import (AddNewMailingForm, AddNewMessageForm,
                                AddNewRecipientForm)
 from app_mailing.models import Attempt, Mailing, Message, Recipient
 from app_mailing.services import send_mailing, stop_mailing
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+
 
 # 1. Контроллеры для "Управление клиентами"
 
 
+@method_decorator(cache_page(60 * 15), name="dispatch")  # Декоратор для создания кеша для всей страницы
 class RecipientListView(LoginRequiredMixin, generic.ListView):
     """Представление для отображения списка Получателей рассылки."""
 
@@ -110,6 +114,7 @@ class RecipientDeleteView(LoginRequiredMixin, generic.DeleteView):
 # 2. Контроллеры для "Управление сообщениями"
 
 
+@method_decorator(cache_page(60 * 15), name="dispatch")  # Декоратор для создания кеша для всей страницы
 class MessageListView(LoginRequiredMixin, generic.ListView):
     """Представление для отображения списка Сообщений для рассылок."""
 
@@ -189,6 +194,7 @@ class MessageDeleteView(LoginRequiredMixin, generic.DeleteView):
 # 3. Контроллеры для "Управление рассылками"
 
 
+@method_decorator(cache_page(60 * 15), name="dispatch")  # Декоратор для создания кеша для всей страницы
 class MailingListView(LoginRequiredMixin, generic.ListView):
     """Представление для отображения списка Рассылок."""
 
@@ -346,6 +352,7 @@ class StopMailingView(LoginRequiredMixin, generic.View):
 # 4. Контроллеры для "Главная страница"
 
 
+@method_decorator(cache_page(60 * 15), name="dispatch")  # Декоратор для создания кеша для всей страницы
 class MainPageView(LoginRequiredMixin, generic.TemplateView):
     """Представление для отображения *Главной страницы* со статистикой рассылок."""
 
