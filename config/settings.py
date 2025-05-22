@@ -146,12 +146,12 @@ LOGOUT_REDIRECT_URL = 'users:start_page'
 
 LOGIN_URL = 'users:start_page'
 
-# REDIS_URL = os.getenv('REDIS_URL')
-# CACHE_ENABLED = True
-# if CACHE_ENABLED:
-#     CACHES = {
-#         'default': {
-#             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-#             'LOCATION': REDIS_URL,
-#         }
-#     }
+REDIS_URL = os.getenv('REDIS_URL')
+CACHE_ENABLED = True
+if CACHE_ENABLED:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_URL,
+        }
+    }
