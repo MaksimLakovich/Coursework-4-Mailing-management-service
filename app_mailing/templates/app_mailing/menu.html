@@ -1,0 +1,64 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container align-items-center">
+
+        {% if user.is_authenticated %}
+
+        <!-- Логотип и название -->
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <img src="/static/image/app_logo/app_logo_2_title_background.png" alt="MailForge" width="70" height="63"
+                 class="me-2">
+            <strong>MailForge</strong>
+        </a>
+
+        <!-- Кнопки навигации -->
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-5">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="{% url 'app_mailing:main_page' %}">Главная</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'app_mailing:message_list_page' %}">Сообщения</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'app_mailing:recipient_list_page' %}">Получатели</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'app_mailing:mailing_list_page' %}">Рассылки</a>
+            </li>
+            {% if perms.users.can_see_list_user %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'users:user_list_page' %}">Пользователи сервиса</a>
+            </li>
+            {% endif %}
+        </ul>
+
+        <!-- Аутентификация -->
+        <div class="dropdown">
+            <a class="avatar-link dropdown-toggle" href="#" role="button" id="dropdownMenuButton"
+               data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="{% if user.avatar and user.avatar.name %}{{ user.avatar.url }}{% else %}/static/image/default_avatar_user/default_avatar.png{% endif %}"
+                     alt="Аватар"
+                     class="rounded-circle" style="width: 40px; height: 40px;">
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                <li><span class="dropdown-item-text">{{ user.email }}</span></li>
+                <li><a class="dropdown-item" href="#">Редактировать профиль</a></li>
+                <li><a class="dropdown-item" href="#">Изменить пароль</a></li>
+                <li>
+                    <form method="post" action="{% url 'users:logout_page' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item">Выйти</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+
+        {% else %}
+
+        <!-- Логотип и название для неавторизованного пользователя -->
+        <!-- Альтернативный трюк: я сделал визуально одинаковую высоту, но так как логотип не нужен в else, то просто использую прозрачный логотип-->
+        <img src="/static/image/app_logo/app_logo_2_title_background.png" style="opacity: 0;" width="70" height="63" class="me-2">
+
+        {% endif %}
+
+    </div>
+</nav>

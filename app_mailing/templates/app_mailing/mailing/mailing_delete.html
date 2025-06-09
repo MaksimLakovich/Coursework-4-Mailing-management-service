@@ -1,0 +1,64 @@
+{% extends 'app_mailing/base.html' %}
+
+{% block title %}Удаление рассылки{% endblock %}
+
+{% block content %}
+
+<!-- Заголовок страницы -->
+<div class="text-center my-5">
+    <h2 class="fw-bold">Подтверждение удаления рассылки:</h2>
+    <table class="table table-hover align-middle table-bordered shadow-sm">
+        <tbody>
+        <tr>
+            <!-- Статус -->
+            <td class="text-center">
+                {% if mailing.status == "launched" %}
+                <span class="text-success fw-bold">{{ mailing.get_status_display }}</span>
+                {% elif mailing.status == "accomplished" %}
+                <span class="text-secondary fw-bold">{{ mailing.get_status_display }}</span>
+                {% elif mailing.status == "created" %}
+                <span class="fw-bold">{{ mailing.get_status_display }}</span>
+                {% else %}
+                {{ mailing.get_status_display }}
+                {% endif %}
+            </td>
+            <!-- Сообщение -->
+            <td>{{ mailing.message.message_subject }}</td>
+            <!-- Получатели -->
+            <td>
+                <ul class="mb-0 ps-3" style="min-width: 350px;">
+                    {% for recipient in mailing.recipients.all %}
+                    <li>{{ recipient.full_name }}</li>
+                    {% empty %}
+                    <li class="text-muted">Нет получателей</li>
+                    {% endfor %}
+                </ul>
+            </td>
+<!--            <td>{{ mailing.recipients }}</td>-->
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="container">
+    <div class="row text-start">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="card-body mt-4">
+                <h4>Вы действительно хотите удалить эту рассылку?</h4>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+
+                    <!-- Кнопки -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-danger mt-4 me-2">Удалить</button>
+                        <a href="{% url 'app_mailing:mailing_list_page' %}"
+                           class="btn btn-outline-primary mt-4">Назад</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

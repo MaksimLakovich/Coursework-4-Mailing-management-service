@@ -1,0 +1,175 @@
+{% extends 'app_mailing/base.html' %}
+
+{% block title %}Рассылки{% endblock %}
+
+{% block content %}
+
+<!-- Заголовок страницы -->
+<div class="text-center my-5">
+    <h2 class="fw-bold">Список рассылок</h2>
+    <p class="text-muted">Управляйте вашими email-рассылками</p>
+</div>
+
+<!-- Кнопка добавления -->
+<div class="d-flex justify-content-end mb-4">
+    {% if not user.is_blocked %}
+    <a href="{% url 'app_mailing:mailing_add_page' %}" class="btn btn-success shadow-sm">
+        <i class="fas fa-plus me-2"></i>Добавить рассылку
+    </a>
+    {% else %}
+    <div class="alert alert-danger text-center mt-3">
+        Вы заблокированы. Обратитесь к менеджеру: +1 342 932 2345
+    </div>
+    {% endif %}
+</div>
+
+<!-- Таблица -->
+<div class="table-responsive">
+    <table class="table table-hover align-middle table-bordered shadow-sm">
+
+        <!-- Оглавление таблицы -->
+        <thead class="table-dark text-center align-middle">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Первая отправка</th>
+            <th scope="col">Окончание отправки</th>
+            <th scope="col">Статус рассылки</th>
+            <th scope="col">Сообщение рассылки</th>
+            <th scope="col">Получатели рассылки</th>
+            <th scope="col">Действия</th>
+        </tr>
+        </thead>
+
+        <!-- Содержимое таблицы -->
+        <tbody>
+        {% for mailing in mailings %}
+        <tr class="{% if user != mailing.owner %}table-secondary{% endif %}">
+
+            <!-- Нумерация, дата запуска, дата окончания -->
+            <th class="text-center" scope="row">{{ forloop.counter }}</th>
+            <td class="text-center" style="min-width: 180px;">{{ mailing.first_message_sending|date:"d.m.Y, H:i"|default:"—" }}</td>
+            <td class="text-center" style="min-width: 180px;">{{ mailing.end_message_sending|date:"d.m.Y, H:i"|default:"—" }}</td>
+
+            <!-- Статус рассылки -->
+            <td class="text-center">
+                {% if mailing.status == "launched" %}
+                    <span class="text-success fw-bold">{{ mailing.get_status_display }}</span>
+
+                {% elif mailing.status == "accomplished" %}
+                    <span class="text-secondary fw-bold">{{ mailing.get_status_display }}</span>
+
+                {% elif mailing.status == "created" %}
+                    <span class="fw-bold">{{ mailing.get_status_display }}</span>
+
+                    <!-- Кнопка ЗАПУСТИТЬ для статуса СОЗДАНА -->
+                    {% if user == mailing.owner %}
+                        <div>
+                            <form method="post" action="{% url 'app_mailing:start_mailing_page' mailing.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                {% if not user.is_blocked %}
+                                <button type="submit" class="btn btn-sm btn-success me-1">
+                                    <i class="fas fa-play"></i> Запустить
+                                </button>
+                                {% else %}
+                                <button type="submit" class="btn btn-sm btn-success me-1 disabled">
+                                    <i class="fas fa-play"></i> Запустить
+                                </button>
+                                {% endif %}
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="text-muted small fst-italic mt-1">
+                            (запустить может только создатель рассылки)
+                        </div>
+                    {% endif %}
+
+                {% else %}
+                    {{ mailing.get_status_display }}
+
+                {% endif %}
+            </td>
+
+            <!-- Сообщение рассылки-->
+            <td>{{ mailing.message.message_subject|default:"—" }}</td>
+
+            <!-- Получатели -->
+            <!-- ВАРИАНТ 1: Отображать список получателей с помощью popover, чтоб для Получателей отображалось -->
+            <!-- "количество" и "тултип с ФИО" (при наведении отображаю ФИО получателей) -->
+            <td class="text-center">
+                <span
+                        data-bs-toggle="popover"
+                        data-bs-html="true"
+                        data-bs-trigger="focus"
+                        title="Получатели:"
+                        data-bs-content="{% for r in mailing.recipients.all %}{{ r.full_name }}<br>{% endfor %}"
+                        tabindex="0"
+                        class="btn btn-sm btn-outline-dark"
+                >{{ mailing.recipients.count }}</span>
+            </td>
+            <!--            &lt;!&ndash; ВАРИАНТ 2: Отображать список получателей с помощью tooltip, чтоб для Получателей отображалось &ndash;&gt;-->
+            <!--            &lt;!&ndash; "количество" и "тултип с ФИО" (при наведении отображаю ФИО получателей) &ndash;&gt;-->
+            <!--            <td class="text-center">-->
+            <!--                {% with recipients=mailing.recipients.all %}-->
+            <!--                {% if recipients.count <= 0 %}-->
+            <!--                <span-->
+            <!--                        data-bs-toggle="tooltip"-->
+            <!--                        data-bs-placement="top"-->
+            <!--                        data-bs-html="true"-->
+            <!--                        title="{% for r in recipients %}{{ r.full_name }}<br>{% endfor %}"-->
+            <!--                >{{ recipients.count }}-->
+            <!--                </span>-->
+            <!--                {% else %}-->
+            <!--                <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}">{{ recipients.count }}</a>-->
+            <!--                {% endif %}-->
+            <!--                {% endwith %}-->
+            <!--            </td>-->
+
+            <!-- Кнопки действия -->
+            {% if user == mailing.owner or perms.users.can_block_user %}
+                <td class="text-center">
+                    {% if mailing.status == "launched" %}
+                    <form method="post" action="{% url 'app_mailing:stop_mailing_page' mailing.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-secondary">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </form>
+                    {% elif mailing.status == "created" and user == mailing.owner %}
+                        {% if not user.is_blocked %}
+                            <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        {% else %}
+                            <a href="#" class="btn btn-sm btn-warning me-1 disabled">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm btn-danger me-1 disabled">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        {% endif %}
+                    {% else %}
+                    <span class="text-muted">
+                        —
+                    </span>
+                    {% endif %}
+                </td>
+            {% else %}
+                <td class="text-center text-muted">—</td>
+            {% endif %}
+
+        </tr>
+
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center text-muted py-4">Пока нет рассылок</td>
+        </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

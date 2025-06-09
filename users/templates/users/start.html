@@ -1,0 +1,42 @@
+{% extends 'app_mailing/base.html' %}
+
+{% load static %}
+
+{% block title %}Регистрация в MailForge{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+
+    <!-- Hero-блок с логотипом и текстом -->
+    <div class="text-center mb-5">
+
+        <!-- Логотип + Текст -->
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4">
+            <img src="{% static 'image/app_logo/app_logo_3_title_background.png' %}" class="img-fluid"
+                 alt="Логотип MailForge" style="max-height: 120px;">
+            <div>
+                <h1 class="fw-bold text-primary">MailForge — разогрей интерес клиентов!</h1>
+                <p class="lead text-muted mb-0">Рассылки для прогрева, удержания и роста. Управляй, анализируй и
+                    вдохновляй — всё в одном месте.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Форма для кнопок с отступом -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card rounded-4 border-0">
+                <div class="card-body p-5">
+                    <!-- Кнопки -->
+                    <div id="action-buttons" class="text-center">
+                        <a href="{% url 'users:login_page' %}" class="btn btn-outline-primary btn-lg w-100 mb-3">Войти</a>
+                        <a href="{% url 'users:register_page' %}" class="btn btn-primary btn-lg w-100">Зарегистрироваться</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

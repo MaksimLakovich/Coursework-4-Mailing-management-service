@@ -1,0 +1,60 @@
+{% extends 'app_mailing/base.html' %}
+
+{% load static %}
+
+{% block title %}Вход в MailForge{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+
+    <!-- Hero-блок с логотипом и текстом -->
+    <div class="text-center mb-5">
+
+        <!-- Логотип + Текст -->
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4">
+            <img src="{% static 'image/app_logo/app_logo_3_title_background.png' %}" class="img-fluid"
+                 alt="Логотип MailForge" style="max-height: 120px;">
+            <div>
+                <h1 class="fw-bold text-primary">MailForge — разогрей интерес клиентов!</h1>
+                <p class="lead text-muted mb-0">Рассылки для прогрева, удержания и роста. Управляй, анализируй и
+                    вдохновляй — всё в одном месте.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Форма для полей с отступом  -->
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card rounded-4 border-0">
+                <div class="card-body p-5">
+                    <h3 class="text-center mb-4 fw-bold">Вход</h3>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            Пожалуйста, проверьте правильность введённых данных и повторите попытку.
+                        </div>
+                        <!-- Появляется ссылка на восстановление пароля  -->
+                        <p class="text-center mt-3">
+                            <a href="{% url 'users:password_reset_page' %}">Забыли пароль?</a>
+                        </p>
+                        {% endif %}
+
+                        <!-- Кнопки  -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-success btn-lg w-100">Войти</button>
+                        </div>
+                        <div id="action-buttons">
+                            <a href="{% url 'users:start_page' %}" class="btn btn-outline-secondary btn-lg w-100 mt-2">Назад</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
