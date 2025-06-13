@@ -1,22 +1,26 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.utils.cache import _generate_cache_key
+from django.utils.decorators import method_decorator
 from django.views import generic
+from django.views.decorators.cache import cache_page
 
 from app_mailing.forms import (AddNewMailingForm, AddNewMessageForm,
                                AddNewRecipientForm)
 from app_mailing.models import Attempt, Mailing, Message, Recipient
 from app_mailing.services import send_mailing, stop_mailing
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
 
 
 # 1. Контроллеры для "Управление клиентами"
 
 
-@method_decorator(cache_page(60 * 15), name="dispatch")  # Декоратор для создания кеша для всей страницы
+# Использую декоратор для создания кеша для всей страницы с параметром key_prefix, который потом нужен для
+# сброса кэша страницы при редактировании/изменении данных какого либо объекта (получателя)
+@method_decorator(cache_page(60 * 15, key_prefix="recipients_list"), name="dispatch")
 class RecipientListView(LoginRequiredMixin, generic.ListView):
     """Представление для отображения списка Получателей рассылки."""
 
@@ -80,10 +84,48 @@ class RecipientUpdateView(LoginRequiredMixin, generic.UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        """Отправка пользователю уведомления об успешном редактировании данных Получателя из списка рассылки."""
-        recipient = self.get_object()
-        messages.success(self.request, f"Вы успешно обновили данные клиента: {recipient.email}")
-        return super().form_valid(form)
+        """1) Отправка пользователю уведомления об успешном редактировании данных Получателя из списка рассылки.
+        2) Сброс кэша при обновлении данных какого-либо Получателя из списка."""
+        response = super().form_valid(form)
+
+        # # ВАРИАНТ 1: через параметр самого объекта recipient с получением его через get_object():
+        # recipient = self.get_object()
+        # messages.success(self.request, f"Вы успешно обновили данные клиента: {recipient.email}")
+        # ВАРИАНТ 2: обращаясь к параметру объекта через саму форму - form.instance.email:
+        messages.success(self.request, f"Вы успешно обновили данные клиента: {form.instance.email}")
+
+        # Формирую новый объект запроса с путём до списка всех получателей "recipient_list_page".
+        # Сейчас выполняя запрос UpdateView мы находимся внутри формы редактирования какого-то одного получателя
+        # (например: /mailing/recipients/24/update/), а значит: self.request.path  ➝  "/mailing/recipients/24/update/".
+        # Но, необходимо сбросить кэш списка всех получателей (именно в "/mailing/recipients/"), поэтому подменяю путь:
+        # ШАГ 1: Здесь я запрашиваю у Django URL для именованного пути "app_mailing:recipient_list_page", что вернёт
+        # нужную строку "/mailing/recipients/":
+        list_path = reverse("app_mailing:recipient_list_page")
+        # ШАГ 2: Здесь делаю так, чтоб Django временно сделал вид, что текущий запрос был к списку получателей.
+        # Это нужно только на момент вызова _generate_cache_key() - чтобы он сгенерировал правильный ключ кэша
+        # именно для страницы списка, а не формы редактирования:
+        self.request.path = list_path
+        # Далее задача: получить точное имя ключа кэша, по которому Django сохранил страницу "/mailing/recipients/",
+        # то есть список получателей.
+        # Django кэширует не просто по URL, а использует внутренний алгоритм для генерации ключа.
+        # Вызываю внутреннюю Django-функцию _generate_cache_key(), которая создаёт имя кэша, которое Django использует
+        # при сохранении страницы:
+        cache_key = _generate_cache_key(
+            # Передаю наш request - чтобы Django знал, какой путь учитывать при удалении кэша (в этом request.path уже
+            # подменён выше!)
+            request=self.request,
+            # Кэш всегда создаётся для GET-запросов (POST и другие - нет)
+            method="GET",
+            # Если бы у меня были какие-то особые заголовки (Vary: Header), я бы указал их тут. Но нет ничего такого,
+            # поэтому просто передаю пустой список
+            headerlist=[],
+            # Это префикс, который указывал в @cache_page(...) на RecipientListView. Очень важно, чтобы здесь было
+            # точно то же самое. Иначе ключ не совпадёт - и кэш не удалится
+            key_prefix="recipients_list"
+        )
+        cache.delete(cache_key)
+
+        return response
 
 
 class RecipientDeleteView(LoginRequiredMixin, generic.DeleteView):
