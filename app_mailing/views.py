@@ -492,11 +492,25 @@ class SendMailingView(LoginRequiredMixin, generic.View):
     и фиксации *Попыток рассылок* по каждому *Получателю* из рассылки."""
 
     def post(self, request, pk):
-        """Метод запускает сервисную функцию *send_mailing()* из services.py, которая:
-        1) Отправляет email всем получателям в выбранной *Рассылке*.
-        2) Фиксирует *Попытки рассылок* по каждому получателю."""
+        """1) Метод запускает сервисную функцию *send_mailing()* из services.py, которая:
+            - отправляет email всем получателям в выбранной *Рассылке*.
+            - фиксирует *Попытки рассылок* по каждому получателю.
+        2) Сброс кэша при запуске какой-либо Рассылки из списка.
+        3) Информирование пользователя об успешном запуске Рассылки."""
         mailing = get_object_or_404(Mailing, pk=pk)
         send_mailing(request, mailing)
+
+        list_path = reverse("app_mailing:mailing_list_page")
+        request.path = list_path
+        cache_key = _generate_cache_key(
+            request=request,
+            method="GET",
+            headerlist=[],
+            key_prefix="mailings_list"
+        )
+        cache.delete(cache_key)
+
+        messages.success(request, "Рассылка была успешно запущена.")
         return redirect("app_mailing:mailing_list_page")
 
 
@@ -505,16 +519,26 @@ class StopMailingView(LoginRequiredMixin, generic.View):
     и фиксации остановки *Попыток рассылок* по каждому *Получателю* из рассылки, которые еще не были отправлены."""
 
     def post(self, request, pk):
-        """POST-запрос инициирует остановку рассылки:
-        - Завершает рассылку.
-        - Фиксирует "неудачные" попытки рассылки по оставшимся получателям.
-        - Возвращает пользователя на список рассылок."""
+        """1) POST-запрос инициирует остановку рассылки:
+            - завершает рассылку.
+            - фиксирует "неудачные" попытки рассылки по оставшимся получателям.
+            - возвращает пользователя на список рассылок.
+        2) Сброс кэша при остановке какой-либо Рассылки из списка.
+        3) Информирование пользователя об успешной остановке запущенной ранее Рассылки."""
         mailing = get_object_or_404(Mailing, pk=pk)
-
         if request.user != mailing.owner:
             return HttpResponseForbidden("Вы не можете останавливать чужую рассылку.")
-
         stop_mailing(mailing, reason="Пользователь вручную остановил рассылку")
+
+        list_path = reverse("app_mailing:mailing_list_page")
+        request.path = list_path
+        cache_key = _generate_cache_key(
+            request=request,
+            method="GET",
+            headerlist=[],
+            key_prefix="mailings_list"
+        )
+        cache.delete(cache_key)
 
         messages.success(request, "Рассылка была успешно остановлена.")
         return redirect("app_mailing:mailing_list_page")
