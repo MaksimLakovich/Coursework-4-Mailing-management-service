@@ -306,7 +306,7 @@ class MessageDeleteView(LoginRequiredMixin, generic.DeleteView):
     def form_valid(self, form):
         """1) Отправка пользователю уведомления об успешном удалении Сообщения из списка рассылки.
         2) Сброс кэша при удалении какого-либо Сообщения из списка."""
-        messages.success(self.request, f"Вы удалили сообщение.")
+        messages.success(self.request, "Вы удалили сообщение.")
 
         list_path = reverse("app_mailing:message_list_page")
         self.request.path = list_path
