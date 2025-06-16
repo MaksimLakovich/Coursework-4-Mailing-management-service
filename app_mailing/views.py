@@ -14,7 +14,6 @@ from app_mailing.forms import (AddNewMailingForm, AddNewMessageForm,
 from app_mailing.models import Attempt, Mailing, Message, Recipient
 from app_mailing.services import send_mailing, stop_mailing
 
-
 # 1. Контроллеры для "Управление клиентами"
 
 
@@ -541,6 +540,50 @@ class StopMailingView(LoginRequiredMixin, generic.View):
         cache.delete(cache_key)
 
         messages.success(request, "Рассылка была успешно остановлена.")
+        return redirect("app_mailing:mailing_list_page")
+
+
+class ScheduleMailingModalView(LoginRequiredMixin, generic.View):
+    """Представление для планирования запуска *Рассылки* через модальное окно."""
+
+    def post(self, request, pk):
+        """- Устанавливает дату и время первого запуска (first_message_sending).
+        - Переводит рассылку в статус "created" (готова к отправке).
+        - Планировщик APScheduler обработает эту рассылку в нужный момент.
+        - Выполняется проверка прав (только владелец рассылки может её планировать).
+        - Очищает кеш списка рассылок для мгновенного отображения изменений.
+        - Показывает пользователю уведомление об успехе или ошибке."""
+        mailing = get_object_or_404(Mailing, pk=pk)
+
+        # Проверка прав
+        if mailing.owner != request.user:
+            return HttpResponseForbidden("Вы не можете запланировать чужую рассылку.")
+
+        # Получение даты из формы
+        first_message_sending = request.POST.get("first_message_sending")
+
+        if first_message_sending:
+            mailing.first_message_sending = first_message_sending
+            mailing.status = "created"
+            mailing.save()
+
+            list_path = reverse("app_mailing:mailing_list_page")
+            request.path = list_path
+            cache_key = _generate_cache_key(
+                request=request,
+                method="GET",
+                headerlist=[],
+                key_prefix="mailings_list"
+            )
+            cache.delete(cache_key)
+
+            messages.success(
+                request,
+                f"Рассылка успешно запланирована на {mailing.first_message_sending}"
+            )
+        else:
+            messages.error(request, "Не указана дата и время!")
+
         return redirect("app_mailing:mailing_list_page")
 
 
