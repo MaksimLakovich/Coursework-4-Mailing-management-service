@@ -563,9 +563,25 @@ class ScheduleMailingModalView(LoginRequiredMixin, generic.View):
         - Показывает пользователю уведомление об успехе или ошибке."""
         mailing = get_object_or_404(Mailing, pk=pk)
 
-        # Проверка прав
+        # Проверка: права пользователя
         if mailing.owner != request.user:
             return HttpResponseForbidden("Вы не можете запланировать чужую рассылку.")
+
+        # Проверка: уже запущена или завершена
+        if mailing.status != "created" and mailing.first_message_sending:
+            messages.warning(request, "Эта рассылка уже была запланирована или отправлена.")
+            # ВАЖНО! Чтобы messages.warning(...) не "залипал" из-за кэширования страницы и корректно отображался
+            # на странице, нам нужно вместо стандартного *return redirect("app_mailing:mailing_list_page")*
+            # написать редирект на URL с ***?nocache={{ timestamp }}***, чтобы обойти @cache_page
+            return redirect(f"{reverse('app_mailing:mailing_list_page')}?nocache={timezone.now().timestamp()}")
+
+        # Проверка: есть ли получатели
+        if not mailing.recipients.exists():
+            messages.warning(request, "У этой рассылки нет получателей.")
+            # ВАЖНО! Чтобы messages.warning(...) не "залипал" из-за кэширования страницы и корректно отображался
+            # на странице, нам нужно вместо стандартного *return redirect("app_mailing:mailing_list_page")*
+            # написать редирект на URL с ***?nocache={{ timestamp }}***, чтобы обойти @cache_page
+            return redirect(f"{reverse('app_mailing:mailing_list_page')}?nocache={timezone.now().timestamp()}")
 
         # Получение даты из формы
         first_message_sending = request.POST.get("first_message_sending")
@@ -592,7 +608,10 @@ class ScheduleMailingModalView(LoginRequiredMixin, generic.View):
         else:
             messages.error(request, "Не указана дата и время!")
 
-        return redirect("app_mailing:mailing_list_page")
+        # ВАЖНО! Чтобы messages.success(...) не "залипал" из-за кэширования страницы и корректно отображался
+        # на странице, нам нужно вместо стандартного *return redirect("app_mailing:mailing_list_page")*
+        # написать редирект на URL с ***?nocache={{ timestamp }}***, чтобы обойти @cache_page
+        return redirect(f"{reverse('app_mailing:mailing_list_page')}?nocache={timezone.now().timestamp()}")
 
 
 # 4. Контроллеры для "Главная страница"
