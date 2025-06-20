@@ -73,12 +73,12 @@
                 <div>
                     <form method="post" action="{% url 'app_mailing:start_mailing_page' mailing.pk %}" class="d-inline">
                         {% csrf_token %}
-                        <!-- ........... -->
+                        <!-- Если рассылка уже запланирована, то нет тут кнопок и показываем планируемую дату и время -->
                         {% if mailing.first_message_sending %}
                         <div class="text-muted small fst-italic">
                             Запланировано на: {{ mailing.first_message_sending|date:"d.m.Y, H:i" }}
                         </div>
-                        <!-- ........... -->
+                        <!-- Если рассылка еще не запланирована отображаем такие кнопки действий -->
                         {% else %}
                             {% if not user.is_blocked %}
                             <!-- Кнопка для немедленного запуска-->
@@ -120,7 +120,8 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                         aria-label="Закрыть"></button>
                             </div>
-                            <!-- Форма модального окна-->
+                            <!-- Форма модального окна
+                            ВАЖНО! "min="{{ now|date:'Y-m-d\TH:i' }}"" не будет работать без добавления определения текущей даты в контроллере. Сам браузер это не делает-->
                             <form method="post" action="{% url 'app_mailing:schedule_mailing_page' mailing.pk %}">
                                 {% csrf_token %}
                                 <div class="modal-body">

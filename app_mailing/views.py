@@ -4,6 +4,7 @@ from django.core.cache import cache
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.utils.cache import _generate_cache_key
 from django.utils.decorators import method_decorator
 from django.views import generic
@@ -367,6 +368,13 @@ class MailingListView(LoginRequiredMixin, generic.ListView):
             # Иначе показываем все с сортировкой с помощью созданного sort_key()
         sorted_mailings = sorted(qs, key=sort_key)
         return sorted_mailings
+
+    def get_context_data(self, **kwargs):
+        """Добавление в контекст шаблона текущую дату и время, чтобы потом
+        использовать её в *min="{{now|date:'Y-m-d\TH:i'}}"* в шаблоне *mailing_list.html*"""
+        context = super().get_context_data(**kwargs)
+        context["now"] = timezone.now()  # добавлено: текущая дата и время
+        return context
 
 
 class MailingCreateView(LoginRequiredMixin, generic.CreateView):
