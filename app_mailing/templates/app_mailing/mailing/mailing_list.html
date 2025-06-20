@@ -73,23 +73,31 @@
                 <div>
                     <form method="post" action="{% url 'app_mailing:start_mailing_page' mailing.pk %}" class="d-inline">
                         {% csrf_token %}
-                        {% if not user.is_blocked %}
-                        <!-- Кнопка для немедленного запуска-->
-                        <button type="submit" class="btn btn-sm btn-success me-1">
-                            <i class="fas fa-play"></i> Запустить
-                        </button>
-                        <!-- Кнопка для открытия модального окна планирования запуска-->
-                        <!-- Важно: data-bs-target="#scheduleModal-{{ mailing.pk }}" — уникальный ID для каждого модального окна по рассылке.-->
-                        <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#scheduleModal-{{ mailing.pk }}">
-                            <i class="fas fa-clock"></i> Запланировать
-                        </button>
+                        <!-- ........... -->
+                        {% if mailing.first_message_sending %}
+                        <div class="text-muted small fst-italic">
+                            Запланировано на: {{ mailing.first_message_sending|date:"d.m.Y, H:i" }}
+                        </div>
+                        <!-- ........... -->
                         {% else %}
-                        <button type="submit" class="btn btn-sm btn-success me-1 disabled">
-                            <i class="fas fa-play"></i> Запустить
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary me-1 disabled">
-                            <i class="fas fa-clock"></i> Запланировать
-                        </button>
+                            {% if not user.is_blocked %}
+                            <!-- Кнопка для немедленного запуска-->
+                            <button type="submit" class="btn btn-sm btn-success me-1">
+                                <i class="fas fa-play"></i> Запустить
+                            </button>
+                            <!-- Кнопка для открытия модального окна планирования запуска-->
+                            <!-- Важно: data-bs-target="#scheduleModal-{{ mailing.pk }}" — уникальный ID для каждого модального окна по рассылке.-->
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#scheduleModal-{{ mailing.pk }}">
+                                <i class="fas fa-clock"></i> Запланировать
+                            </button>
+                            {% else %}
+                            <button type="submit" class="btn btn-sm btn-success me-1 disabled">
+                                <i class="fas fa-play"></i> Запустить
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1 disabled">
+                                <i class="fas fa-clock"></i> Запланировать
+                            </button>
+                            {% endif %}
                         {% endif %}
                     </form>
                 </div>
@@ -194,21 +202,27 @@
                     </button>
                 </form>
                 {% elif mailing.status == "created" and user == mailing.owner %}
-                {% if not user.is_blocked %}
-                <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1">
-                    <i class="fas fa-trash-alt"></i>
-                </a>
-                {% else %}
-                <a href="#" class="btn btn-sm btn-warning me-1 disabled">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <a href="#" class="btn btn-sm btn-danger me-1 disabled">
-                    <i class="fas fa-trash-alt"></i>
-                </a>
-                {% endif %}
+                    {% if mailing.first_message_sending %}
+                        <button type="submit" class="btn btn-sm btn-secondary">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    {% else %}
+                        {% if not user.is_blocked %}
+                        <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                        {% else %}
+                        <a href="#" class="btn btn-sm btn-warning me-1 disabled">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-danger me-1 disabled">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                        {% endif %}
+                    {% endif %}
                 {% else %}
                 <span class="text-muted">
                         —
