@@ -151,9 +151,6 @@ def stop_mailing(mailing, reason="Рассылка остановлена вру
     :param mailing: объект рассылки (Mailing), которую нужно остановить.
     :param reason: пояснение причины остановки (сохраняется в server_response)."""
 
-    if mailing.status != "launched":
-        return  # Если рассылка не запущена, ничего не делаем
-
     # ШАГ 1. Нахожу всех Получателей останавливаемой Рассылки
     all_recipients = mailing.recipients.all()
 

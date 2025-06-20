@@ -198,21 +198,28 @@
                 {% if mailing.status == "launched" %}
                 <form method="post" action="{% url 'app_mailing:stop_mailing_page' mailing.pk %}" class="d-inline">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-secondary">
+                    <button type="submit" class="btn btn-sm btn-secondary" title="Отменить рассылку">
                         <i class="fas fa-stop"></i>
                     </button>
                 </form>
                 {% elif mailing.status == "created" and user == mailing.owner %}
+
+
                     {% if mailing.first_message_sending %}
-                        <button type="submit" class="btn btn-sm btn-secondary">
+                    <form method="post" action="{% url 'app_mailing:stop_mailing_page' mailing.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-secondary" title="Отменить рассылку">
                             <i class="fas fa-stop"></i>
                         </button>
+                    </form>
+
+
                     {% else %}
                         {% if not user.is_blocked %}
-                        <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
+                        <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1" title="Редактировать рассылку">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1">
+                        <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1" title="Удалить рассылку">
                             <i class="fas fa-trash-alt"></i>
                         </a>
                         {% else %}
