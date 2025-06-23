@@ -35,10 +35,10 @@
                 <td><strong>{{ message.message_subject|default:"—" }}</strong></td>
                 <td>{{ message.message_body|default:"—" }}</td>
                 <td class="text-center">
-                    <a href="{% url 'app_mailing:message_update_page' message.pk %}" class="btn btn-sm btn-warning me-1">
+                    <a href="{% url 'app_mailing:message_update_page' message.pk %}" class="btn btn-sm btn-warning me-1" title="Редактировать сообщение">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <a href="{% url 'app_mailing:message_delete_page' message.pk %}" class="btn btn-sm btn-danger">
+                    <a href="{% url 'app_mailing:message_delete_page' message.pk %}" class="btn btn-sm btn-danger" title="Удалить сообщение">
                         <i class="fas fa-trash-alt"></i>
                     </a>
                 </td>

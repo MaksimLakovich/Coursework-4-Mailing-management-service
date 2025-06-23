@@ -4,6 +4,11 @@
 
 {% block content %}
 
+<!--Чтобы корректно работал фильтр "now" в модальном окне при планировании запуска рассылки нужно добавить:-->
+{% load tz %}
+{% load l10n %}
+
+
 <!-- Заголовок страницы -->
 <div class="text-center my-5">
     <h2 class="fw-bold">Список рассылок</h2>
@@ -47,44 +52,107 @@
 
             <!-- Нумерация, дата запуска, дата окончания -->
             <th class="text-center" scope="row">{{ forloop.counter }}</th>
-            <td class="text-center" style="min-width: 180px;">{{ mailing.first_message_sending|date:"d.m.Y, H:i"|default:"—" }}</td>
-            <td class="text-center" style="min-width: 180px;">{{ mailing.end_message_sending|date:"d.m.Y, H:i"|default:"—" }}</td>
+            <td class="text-center" style="min-width: 180px;">{{ mailing.first_message_sending|date:"d.m.Y, H:i"|default:"—" }}
+            </td>
+            <td class="text-center" style="min-width: 180px;">{{ mailing.end_message_sending|date:"d.m.Y,H:i"|default:"—" }}
+            </td>
 
             <!-- Статус рассылки -->
             <td class="text-center">
                 {% if mailing.status == "launched" %}
-                    <span class="text-success fw-bold">{{ mailing.get_status_display }}</span>
+                <span class="text-success fw-bold">{{ mailing.get_status_display }}</span>
 
                 {% elif mailing.status == "accomplished" %}
-                    <span class="text-secondary fw-bold">{{ mailing.get_status_display }}</span>
+                <span class="text-secondary fw-bold">{{ mailing.get_status_display }}</span>
 
                 {% elif mailing.status == "created" %}
-                    <span class="fw-bold">{{ mailing.get_status_display }}</span>
+                <span class="fw-bold">{{ mailing.get_status_display }}</span>
 
-                    <!-- Кнопка ЗАПУСТИТЬ для статуса СОЗДАНА -->
-                    {% if user == mailing.owner %}
-                        <div>
-                            <form method="post" action="{% url 'app_mailing:start_mailing_page' mailing.pk %}" class="d-inline">
+                <!-- Кнопка ЗАПУСТИТЬ для статуса СОЗДАНА -->
+                {% if user == mailing.owner %}
+                <div>
+                    <form method="post" action="{% url 'app_mailing:start_mailing_page' mailing.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <!-- Если рассылка уже запланирована, то нет тут кнопок и показываем планируемую дату и время -->
+                        {% if mailing.first_message_sending %}
+                        <div class="text-muted small fst-italic">
+                            Запланировано на: {{ mailing.first_message_sending|date:"d.m.Y, H:i" }}
+                        </div>
+                        <!-- Если рассылка еще не запланирована отображаем такие кнопки действий -->
+                        {% else %}
+                            {% if not user.is_blocked %}
+                            <!-- Кнопка для немедленного запуска-->
+                            <button type="submit" class="btn btn-sm btn-success me-1">
+                                <i class="fas fa-play"></i> Запустить
+                            </button>
+                            <!-- Кнопка для открытия модального окна планирования запуска-->
+                            <!-- Важно: data-bs-target="#scheduleModal-{{ mailing.pk }}" — уникальный ID для каждого модального окна по рассылке.-->
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#scheduleModal-{{ mailing.pk }}">
+                                <i class="fas fa-clock"></i> Запланировать
+                            </button>
+                            {% else %}
+                            <button type="submit" class="btn btn-sm btn-success me-1 disabled">
+                                <i class="fas fa-play"></i> Запустить
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1 disabled">
+                                <i class="fas fa-clock"></i> Запланировать
+                            </button>
+                            {% endif %}
+                        {% endif %}
+                    </form>
+                </div>
+                {% else %}
+                <div class="text-muted small fst-italic mt-1">
+                    (запустить может только создатель рассылки)
+                </div>
+                {% endif %}
+
+                <!-- Настройка вида модального окна для планирования запуска рассылки -->
+                <div class="modal fade" id="scheduleModal-{{ mailing.pk }}" tabindex="-1"
+                     aria-labelledby="scheduleModalLabel-{{ mailing.pk }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <!-- Заголовок модального окна-->
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="scheduleModalLabel-{{ mailing.pk }}">
+                                    Запланировать рассылку
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Закрыть"></button>
+                            </div>
+                            <!-- Форма модального окна
+                            ВАЖНО! "min="{{ now|date:'Y-m-d\TH:i' }}"" не будет работать без добавления определения текущей даты в контроллере. Сам браузер это не делает-->
+                            <form method="post" action="{% url 'app_mailing:schedule_mailing_page' mailing.pk %}">
                                 {% csrf_token %}
-                                {% if not user.is_blocked %}
-                                <button type="submit" class="btn btn-sm btn-success me-1">
-                                    <i class="fas fa-play"></i> Запустить
-                                </button>
-                                {% else %}
-                                <button type="submit" class="btn btn-sm btn-success me-1 disabled">
-                                    <i class="fas fa-play"></i> Запустить
-                                </button>
-                                {% endif %}
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="datetime-{{ mailing.pk }}" class="form-label">Дата и время запуска</label>
+                                        <input
+                                                type="datetime-local"
+                                                id="datetime-{{ mailing.pk }}"
+                                                name="first_message_sending"
+                                                class="form-control"
+                                                required
+                                                min="{{ now|date:'Y-m-d\TH:i' }}"
+                                        >
+                                    </div>
+                                </div>
+                                <!-- Кнопки модального окна-->
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        Отмена
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        Сохранить
+                                    </button>
+                                </div>
                             </form>
                         </div>
-                    {% else %}
-                        <div class="text-muted small fst-italic mt-1">
-                            (запустить может только создатель рассылки)
-                        </div>
-                    {% endif %}
+                    </div>
+                </div>
 
                 {% else %}
-                    {{ mailing.get_status_display }}
+                {{ mailing.get_status_display }}
 
                 {% endif %}
             </td>
@@ -126,38 +194,51 @@
 
             <!-- Кнопки действия -->
             {% if user == mailing.owner or perms.users.can_block_user %}
-                <td class="text-center">
-                    {% if mailing.status == "launched" %}
+            <td class="text-center">
+                {% if mailing.status == "launched" %}
+                <form method="post" action="{% url 'app_mailing:stop_mailing_page' mailing.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-secondary" title="Отменить рассылку">
+                        <i class="fas fa-stop"></i>
+                    </button>
+                </form>
+                {% elif mailing.status == "created" and user == mailing.owner %}
+
+
+                    {% if mailing.first_message_sending %}
                     <form method="post" action="{% url 'app_mailing:stop_mailing_page' mailing.pk %}" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-secondary">
+                        <button type="submit" class="btn btn-sm btn-secondary" title="Отменить рассылку">
                             <i class="fas fa-stop"></i>
                         </button>
                     </form>
-                    {% elif mailing.status == "created" and user == mailing.owner %}
-                        {% if not user.is_blocked %}
-                            <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1">
-                                <i class="fas fa-trash-alt"></i>
-                            </a>
-                        {% else %}
-                            <a href="#" class="btn btn-sm btn-warning me-1 disabled">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="#" class="btn btn-sm btn-danger me-1 disabled">
-                                <i class="fas fa-trash-alt"></i>
-                            </a>
-                        {% endif %}
+
+
                     {% else %}
-                    <span class="text-muted">
+                        {% if not user.is_blocked %}
+                        <a href="{% url 'app_mailing:mailing_update_page' mailing.pk %}" class="btn btn-sm btn-warning me-1" title="Редактировать рассылку">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'app_mailing:mailing_delete_page' mailing.pk %}" class="btn btn-sm btn-danger me-1" title="Удалить рассылку">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                        {% else %}
+                        <a href="#" class="btn btn-sm btn-warning me-1 disabled">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="#" class="btn btn-sm btn-danger me-1 disabled">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                <span class="text-muted">
                         —
                     </span>
-                    {% endif %}
-                </td>
+                {% endif %}
+            </td>
             {% else %}
-                <td class="text-center text-muted">—</td>
+            <td class="text-center text-muted">—</td>
             {% endif %}
 
         </tr>

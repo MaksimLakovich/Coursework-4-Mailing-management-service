@@ -1,22 +1,26 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone
+from django.utils.cache import _generate_cache_key
+from django.utils.decorators import method_decorator
 from django.views import generic
+from django.views.decorators.cache import cache_page
 
 from app_mailing.forms import (AddNewMailingForm, AddNewMessageForm,
                                AddNewRecipientForm)
 from app_mailing.models import Attempt, Mailing, Message, Recipient
 from app_mailing.services import send_mailing, stop_mailing
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
-
 
 # 1. Контроллеры для "Управление клиентами"
 
 
-@method_decorator(cache_page(60 * 15), name="dispatch")  # Декоратор для создания кеша для всей страницы
+# Использую декоратор для создания кеша для всей страницы с параметром key_prefix, который потом нужен для
+# сброса кэша страницы при добавлении/редактировании/удалении данных какого-либо объекта (получателя)
+@method_decorator(cache_page(60 * 15, key_prefix="recipients_list"), name="dispatch")
 class RecipientListView(LoginRequiredMixin, generic.ListView):
     """Представление для отображения списка Получателей рассылки."""
 
@@ -55,9 +59,43 @@ class RecipientCreateView(LoginRequiredMixin, generic.CreateView):
 
     def form_valid(self, form):
         """1) Отправка пользователю уведомления об успешном добавлении нового Получателя в список рассылки.
-        2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Получателя рассылки*."""
+        2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Получателя рассылки*.
+        3) Сброс кэша при добавлении нового Получателя."""
         messages.success(self.request, "Новый получатель успешно добавлен")
+
         form.instance.owner = self.request.user  # Привязываю текущего пользователя как owner
+
+        # Формирую новый объект запроса с путём до списка всех получателей "recipient_list_page".
+        # Сейчас выполняя запрос CreateView мы находимся внутри формы создания нового получателя
+        # (например: /recipients/add/), а значит: self.request.path  ➝  "/mailing/recipients/add/".
+        # Но, необходимо сбросить кэш списка всех получателей (именно в "/mailing/recipients/"), поэтому подменяю путь:
+        # ШАГ 1: Здесь я запрашиваю у Django URL для именованного пути "app_mailing:recipient_list_page", что вернёт
+        # нужную строку "/mailing/recipients/":
+        list_path = reverse("app_mailing:recipient_list_page")
+        # ШАГ 2: Здесь делаю так, чтоб Django временно сделал вид, что текущий запрос был к списку получателей.
+        # Это нужно только на момент вызова _generate_cache_key() - чтобы он сгенерировал правильный ключ кэша
+        # именно для страницы списка, а не формы редактирования:
+        self.request.path = list_path
+        # Далее задача: получить точное имя ключа кэша, по которому Django сохранил страницу "/mailing/recipients/",
+        # то есть список получателей.
+        # Django кэширует не просто по URL, а использует внутренний алгоритм для генерации ключа.
+        # Вызываю внутреннюю Django-функцию _generate_cache_key(), которая создаёт имя кэша, которое Django использует
+        # при сохранении страницы:
+        cache_key = _generate_cache_key(
+            # Передаю наш request - чтобы Django знал, какой путь учитывать при удалении кэша (в этом request.path уже
+            # подменён выше!)
+            request=self.request,
+            # Кэш всегда создаётся для GET-запросов (POST и другие - нет)
+            method="GET",
+            # Если бы у меня были какие-то особые заголовки (Vary: Header), я бы указал их тут. Но нет ничего такого,
+            # поэтому просто передаю пустой список
+            headerlist=[],
+            # Это префикс, который указывал в @cache_page(...) на RecipientListView. Очень важно, чтобы здесь было
+            # точно то же самое. Иначе ключ не совпадёт - и кэш не удалится
+            key_prefix="recipients_list"
+        )
+        cache.delete(cache_key)
+
         return super().form_valid(form)
 
 
@@ -80,10 +118,48 @@ class RecipientUpdateView(LoginRequiredMixin, generic.UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        """Отправка пользователю уведомления об успешном редактировании данных Получателя из списка рассылки."""
-        recipient = self.get_object()
-        messages.success(self.request, f"Вы успешно обновили данные клиента: {recipient.email}")
-        return super().form_valid(form)
+        """1) Отправка пользователю уведомления об успешном редактировании данных Получателя из списка рассылки.
+        2) Сброс кэша при обновлении данных какого-либо Получателя из списка."""
+        response = super().form_valid(form)
+
+        # # ВАРИАНТ 1: через параметр самого объекта recipient с получением его через get_object():
+        # recipient = self.get_object()
+        # messages.success(self.request, f"Вы успешно обновили данные клиента: {recipient.email}")
+        # ВАРИАНТ 2: обращаясь к параметру объекта через саму форму - form.instance.email:
+        messages.success(self.request, f"Вы успешно обновили данные клиента: {form.instance.email}")
+
+        # Формирую новый объект запроса с путём до списка всех получателей "recipient_list_page".
+        # Сейчас выполняя запрос UpdateView мы находимся внутри формы редактирования какого-то одного получателя
+        # (например: /mailing/recipients/24/update/), а значит: self.request.path  ➝  "/mailing/recipients/24/update/".
+        # Но, необходимо сбросить кэш списка всех получателей (именно в "/mailing/recipients/"), поэтому подменяю путь:
+        # ШАГ 1: Здесь я запрашиваю у Django URL для именованного пути "app_mailing:recipient_list_page", что вернёт
+        # нужную строку "/mailing/recipients/":
+        list_path = reverse("app_mailing:recipient_list_page")
+        # ШАГ 2: Здесь делаю так, чтоб Django временно сделал вид, что текущий запрос был к списку получателей.
+        # Это нужно только на момент вызова _generate_cache_key() - чтобы он сгенерировал правильный ключ кэша
+        # именно для страницы списка, а не формы редактирования:
+        self.request.path = list_path
+        # Далее задача: получить точное имя ключа кэша, по которому Django сохранил страницу "/mailing/recipients/",
+        # то есть список получателей.
+        # Django кэширует не просто по URL, а использует внутренний алгоритм для генерации ключа.
+        # Вызываю внутреннюю Django-функцию _generate_cache_key(), которая создаёт имя кэша, которое Django использует
+        # при сохранении страницы:
+        cache_key = _generate_cache_key(
+            # Передаю наш request - чтобы Django знал, какой путь учитывать при удалении кэша (в этом request.path уже
+            # подменён выше!)
+            request=self.request,
+            # Кэш всегда создаётся для GET-запросов (POST и другие - нет)
+            method="GET",
+            # Если бы у меня были какие-то особые заголовки (Vary: Header), я бы указал их тут. Но нет ничего такого,
+            # поэтому просто передаю пустой список
+            headerlist=[],
+            # Это префикс, который указывал в @cache_page(...) на RecipientListView. Очень важно, чтобы здесь было
+            # точно то же самое. Иначе ключ не совпадёт - и кэш не удалится
+            key_prefix="recipients_list"
+        )
+        cache.delete(cache_key)
+
+        return response
 
 
 class RecipientDeleteView(LoginRequiredMixin, generic.DeleteView):
@@ -105,16 +181,31 @@ class RecipientDeleteView(LoginRequiredMixin, generic.DeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        """Отправка пользователю уведомления об успешном удалении Получателя из списка рассылки."""
+        """1) Отправка пользователю уведомления об успешном удалении Получателя из списка рассылки.
+        2) Сброс кэша при удалении какого-либо Получателя из списка."""
         recipient = self.get_object()
+
         messages.success(self.request, f"Вы удалили клиента: {recipient.email}")
+
+        list_path = reverse("app_mailing:recipient_list_page")
+        self.request.path = list_path
+        cache_key = _generate_cache_key(
+            request=self.request,
+            method="GET",
+            headerlist=[],
+            key_prefix="recipients_list"
+        )
+        cache.delete(cache_key)
+
         return super().form_valid(form)
 
 
 # 2. Контроллеры для "Управление сообщениями"
 
 
-@method_decorator(cache_page(60 * 15), name="dispatch")  # Декоратор для создания кеша для всей страницы
+# Использую декоратор для создания кеша для всей страницы с параметром key_prefix, который потом нужен для
+# сброса кэша страницы при добавлении/редактировании/удалении данных какого-либо объекта (сообщения)
+@method_decorator(cache_page(60 * 15, key_prefix="messages_list"), name="dispatch")
 class MessageListView(LoginRequiredMixin, generic.ListView):
     """Представление для отображения списка Сообщений для рассылок."""
 
@@ -137,9 +228,22 @@ class MessageCreateView(LoginRequiredMixin, generic.CreateView):
 
     def form_valid(self, form):
         """1) Отправка пользователю уведомления об успешном добавлении нового Сообщения в список рассылки.
-        2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Сообщения рассылки*."""
+        2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Сообщения рассылки*.
+        3) Сброс кэша при добавлении нового Сообщения."""
         messages.success(self.request, "Новое сообщение успешно добавлено")
+
         form.instance.owner = self.request.user  # Привязываю текущего пользователя как owner
+
+        list_path = reverse("app_mailing:message_list_page")
+        self.request.path = list_path
+        cache_key = _generate_cache_key(
+            request=self.request,
+            method="GET",
+            headerlist=[],
+            key_prefix="messages_list"
+        )
+        cache.delete(cache_key)
+
         return super().form_valid(form)
 
 
@@ -162,9 +266,23 @@ class MessageUpdateView(LoginRequiredMixin, generic.UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        """Отправка пользователю уведомления об успешном редактировании данных Сообщения из списка рассылки."""
-        messages.success(self.request, "Вы успешно обновили данные сообщения")
-        return super().form_valid(form)
+        """1) Отправка пользователю уведомления об успешном редактировании данных Сообщения из списка рассылки.
+        2) Сброс кэша при обновлении данных какого-либо Сообщения из списка."""
+        response = super().form_valid(form)
+
+        messages.success(self.request, f"Вы успешно обновили данные сообщения: {form.instance.id}")
+
+        list_path = reverse("app_mailing:message_list_page")
+        self.request.path = list_path
+        cache_key = _generate_cache_key(
+            request=self.request,
+            method="GET",
+            headerlist=[],
+            key_prefix="messages_list"
+        )
+        cache.delete(cache_key)
+
+        return response
 
 
 class MessageDeleteView(LoginRequiredMixin, generic.DeleteView):
@@ -186,15 +304,29 @@ class MessageDeleteView(LoginRequiredMixin, generic.DeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        """Отправка пользователю уведомления об успешном удалении Сообщения из списка рассылки."""
-        messages.success(self.request, "Вы удалили сообщение")
+        """1) Отправка пользователю уведомления об успешном удалении Сообщения из списка рассылки.
+        2) Сброс кэша при удалении какого-либо Сообщения из списка."""
+        messages.success(self.request, "Вы удалили сообщение.")
+
+        list_path = reverse("app_mailing:message_list_page")
+        self.request.path = list_path
+        cache_key = _generate_cache_key(
+            request=self.request,
+            method="GET",
+            headerlist=[],
+            key_prefix="messages_list"
+        )
+        cache.delete(cache_key)
+
         return super().form_valid(form)
 
 
 # 3. Контроллеры для "Управление рассылками"
 
 
-@method_decorator(cache_page(60 * 15), name="dispatch")  # Декоратор для создания кеша для всей страницы
+# Использую декоратор для создания кеша для всей страницы с параметром key_prefix, который потом нужен для
+# сброса кэша страницы при редактировании/изменении данных какого-либо объекта (рассылки)
+@method_decorator(cache_page(60 * 15, key_prefix="mailings_list"), name="dispatch")
 class MailingListView(LoginRequiredMixin, generic.ListView):
     """Представление для отображения списка Рассылок."""
 
@@ -237,6 +369,13 @@ class MailingListView(LoginRequiredMixin, generic.ListView):
         sorted_mailings = sorted(qs, key=sort_key)
         return sorted_mailings
 
+    def get_context_data(self, **kwargs):
+        """Добавление в контекст шаблона текущую дату и время, чтобы потом
+        использовать её в *min="{{now|date:'Y-m-d\TH:i'}}"* в шаблоне *mailing_list.html*"""
+        context = super().get_context_data(**kwargs)
+        context["now"] = timezone.now()  # добавлено: текущая дата и время
+        return context
+
 
 class MailingCreateView(LoginRequiredMixin, generic.CreateView):
     """Представление для добавления новой Рассылки в список."""
@@ -255,9 +394,22 @@ class MailingCreateView(LoginRequiredMixin, generic.CreateView):
 
     def form_valid(self, form):
         """1) Отправка пользователю уведомления об успешном добавлении новой Рассылки в список.
-        2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Рассылки*."""
+        2) Автоматическое заполнение текущим пользователем поля 'owner' при создании нового *Рассылки*.
+        3) Сброс кэша при добавлении новой Рассылки."""
         messages.success(self.request, "Новая рассылка успешно добавлена")
+
         form.instance.owner = self.request.user  # Привязываю текущего пользователя как owner
+
+        list_path = reverse("app_mailing:mailing_list_page")
+        self.request.path = list_path
+        cache_key = _generate_cache_key(
+            request=self.request,
+            method="GET",
+            headerlist=[],
+            key_prefix="mailings_list"
+        )
+        cache.delete(cache_key)
+
         return super().form_valid(form)
 
 
@@ -287,9 +439,23 @@ class MailingUpdateView(LoginRequiredMixin, generic.UpdateView):
         return kwargs
 
     def form_valid(self, form):
-        """Отправка пользователю уведомления об успешном редактировании данных Рассылки из списка."""
-        messages.success(self.request, "Вы успешно обновили данные рассылки")
-        return super().form_valid(form)
+        """1) Отправка пользователю уведомления об успешном редактировании данных Рассылки из списка.
+        2) Сброс кэша при обновлении данных какой-либо Рассылки из списка."""
+        response = super().form_valid(form)
+
+        messages.success(self.request, f"Вы успешно обновили данные рассылки: {form.instance.id}")
+
+        list_path = reverse("app_mailing:mailing_list_page")
+        self.request.path = list_path
+        cache_key = _generate_cache_key(
+            request=self.request,
+            method="GET",
+            headerlist=[],
+            key_prefix="mailings_list"
+        )
+        cache.delete(cache_key)
+
+        return response
 
 
 class MailingDeleteView(LoginRequiredMixin, generic.DeleteView):
@@ -311,8 +477,20 @@ class MailingDeleteView(LoginRequiredMixin, generic.DeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        """Отправка пользователю уведомления об успешном удалении Рассылки."""
+        """1) Отправка пользователю уведомления об успешном удалении Рассылки.
+        2) Сброс кэша при удалении какой-либо Рассылки из списка."""
         messages.success(self.request, "Вы удалили рассылку")
+
+        list_path = reverse("app_mailing:mailing_list_page")
+        self.request.path = list_path
+        cache_key = _generate_cache_key(
+            request=self.request,
+            method="GET",
+            headerlist=[],
+            key_prefix="mailings_list"
+        )
+        cache.delete(cache_key)
+
         return super().form_valid(form)
 
 
@@ -321,11 +499,25 @@ class SendMailingView(LoginRequiredMixin, generic.View):
     и фиксации *Попыток рассылок* по каждому *Получателю* из рассылки."""
 
     def post(self, request, pk):
-        """Метод запускает сервисную функцию *send_mailing()* из services.py, которая:
-        1) Отправляет email всем получателям в выбранной *Рассылке*.
-        2) Фиксирует *Попытки рассылок* по каждому получателю."""
+        """1) Метод запускает сервисную функцию *send_mailing()* из services.py, которая:
+            - отправляет email всем получателям в выбранной *Рассылке*.
+            - фиксирует *Попытки рассылок* по каждому получателю.
+        2) Сброс кэша при запуске какой-либо Рассылки из списка.
+        3) Информирование пользователя об успешном запуске Рассылки."""
         mailing = get_object_or_404(Mailing, pk=pk)
         send_mailing(request, mailing)
+
+        list_path = reverse("app_mailing:mailing_list_page")
+        request.path = list_path
+        cache_key = _generate_cache_key(
+            request=request,
+            method="GET",
+            headerlist=[],
+            key_prefix="mailings_list"
+        )
+        cache.delete(cache_key)
+
+        messages.success(request, "Рассылка была успешно запущена.")
         return redirect("app_mailing:mailing_list_page")
 
 
@@ -334,25 +526,97 @@ class StopMailingView(LoginRequiredMixin, generic.View):
     и фиксации остановки *Попыток рассылок* по каждому *Получателю* из рассылки, которые еще не были отправлены."""
 
     def post(self, request, pk):
-        """POST-запрос инициирует остановку рассылки:
-        - Завершает рассылку.
-        - Фиксирует "неудачные" попытки рассылки по оставшимся получателям.
-        - Возвращает пользователя на список рассылок."""
+        """1) POST-запрос инициирует остановку рассылки:
+            - завершает рассылку.
+            - фиксирует "неудачные" попытки рассылки по оставшимся получателям.
+            - возвращает пользователя на список рассылок.
+        2) Сброс кэша при остановке какой-либо Рассылки из списка.
+        3) Информирование пользователя об успешной остановке запущенной ранее Рассылки."""
         mailing = get_object_or_404(Mailing, pk=pk)
-
         if request.user != mailing.owner:
             return HttpResponseForbidden("Вы не можете останавливать чужую рассылку.")
-
         stop_mailing(mailing, reason="Пользователь вручную остановил рассылку")
+
+        list_path = reverse("app_mailing:mailing_list_page")
+        request.path = list_path
+        cache_key = _generate_cache_key(
+            request=request,
+            method="GET",
+            headerlist=[],
+            key_prefix="mailings_list"
+        )
+        cache.delete(cache_key)
 
         messages.success(request, "Рассылка была успешно остановлена.")
         return redirect("app_mailing:mailing_list_page")
 
 
+class ScheduleMailingModalView(LoginRequiredMixin, generic.View):
+    """Представление для планирования запуска *Рассылки* через модальное окно."""
+
+    def post(self, request, pk):
+        """- Устанавливает дату и время первого запуска (first_message_sending).
+        - Переводит рассылку в статус "created" (готова к отправке).
+        - Планировщик APScheduler обработает эту рассылку в нужный момент.
+        - Выполняется проверка прав (только владелец рассылки может её планировать).
+        - Очищает кеш списка рассылок для мгновенного отображения изменений.
+        - Показывает пользователю уведомление об успехе или ошибке."""
+        mailing = get_object_or_404(Mailing, pk=pk)
+
+        # Проверка: права пользователя
+        if mailing.owner != request.user:
+            return HttpResponseForbidden("Вы не можете запланировать чужую рассылку.")
+
+        # Проверка: уже запущена или завершена
+        if mailing.status != "created" and mailing.first_message_sending:
+            messages.warning(request, "Эта рассылка уже была запланирована или отправлена.")
+            # ВАЖНО! Чтобы messages.warning(...) не "залипал" из-за кэширования страницы и корректно отображался
+            # на странице, нам нужно вместо стандартного *return redirect("app_mailing:mailing_list_page")*
+            # написать редирект на URL с ***?nocache={{ timestamp }}***, чтобы обойти @cache_page
+            return redirect(f"{reverse('app_mailing:mailing_list_page')}?nocache={timezone.now().timestamp()}")
+
+        # Проверка: есть ли получатели
+        if not mailing.recipients.exists():
+            messages.warning(request, "У этой рассылки нет получателей.")
+            # ВАЖНО! Чтобы messages.warning(...) не "залипал" из-за кэширования страницы и корректно отображался
+            # на странице, нам нужно вместо стандартного *return redirect("app_mailing:mailing_list_page")*
+            # написать редирект на URL с ***?nocache={{ timestamp }}***, чтобы обойти @cache_page
+            return redirect(f"{reverse('app_mailing:mailing_list_page')}?nocache={timezone.now().timestamp()}")
+
+        # Получение даты из формы
+        first_message_sending = request.POST.get("first_message_sending")
+
+        if first_message_sending:
+            mailing.first_message_sending = first_message_sending
+            mailing.status = "created"
+            mailing.save()
+
+            list_path = reverse("app_mailing:mailing_list_page")
+            request.path = list_path
+            cache_key = _generate_cache_key(
+                request=request,
+                method="GET",
+                headerlist=[],
+                key_prefix="mailings_list"
+            )
+            cache.delete(cache_key)
+
+            messages.success(
+                request,
+                f"Рассылка успешно запланирована на {mailing.first_message_sending}"
+            )
+        else:
+            messages.error(request, "Не указана дата и время!")
+
+        # ВАЖНО! Чтобы messages.success(...) не "залипал" из-за кэширования страницы и корректно отображался
+        # на странице, нам нужно вместо стандартного *return redirect("app_mailing:mailing_list_page")*
+        # написать редирект на URL с ***?nocache={{ timestamp }}***, чтобы обойти @cache_page
+        return redirect(f"{reverse('app_mailing:mailing_list_page')}?nocache={timezone.now().timestamp()}")
+
+
 # 4. Контроллеры для "Главная страница"
 
 
-@method_decorator(cache_page(60 * 15), name="dispatch")  # Декоратор для создания кеша для всей страницы
 class MainPageView(LoginRequiredMixin, generic.TemplateView):
     """Представление для отображения *Главной страницы* со статистикой рассылок."""
 
