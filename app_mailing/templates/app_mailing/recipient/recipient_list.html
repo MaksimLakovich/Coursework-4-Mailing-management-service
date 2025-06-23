@@ -38,10 +38,10 @@
                 <td>{{ recipient.comment|default:"—" }}</td>
                 <td class="text-center">
                     {% if user == recipient.owner %}
-                    <a href="{% url 'app_mailing:recipient_update_page' recipient.pk %}" class="btn btn-sm btn-warning me-1">
+                    <a href="{% url 'app_mailing:recipient_update_page' recipient.pk %}" class="btn btn-sm btn-warning me-1" title="Редактировать получателя">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <a href="{% url 'app_mailing:recipient_delete_page' recipient.pk %}" class="btn btn-sm btn-danger">
+                    <a href="{% url 'app_mailing:recipient_delete_page' recipient.pk %}" class="btn btn-sm btn-danger" title="Удалить получателя">
                         <i class="fas fa-trash-alt"></i>
                     </a>
                     {% else %}
