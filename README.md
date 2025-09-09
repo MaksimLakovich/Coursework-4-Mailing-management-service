@@ -13,12 +13,13 @@
 [10. Функционал рассылки по расписанию (scheduler.py)](#title10) / 
 [11. Автозапуск планировщика (apps.py)](#title11) / 
 [12. Вспомогательные функции (managers.py)](#title12) / 
-[13. Установка проекта](#title13) / 
-[14. Получение ключей .env](#title14) / 
-[15. Получение ключей .env.docker](#title15) / 
-[16. Описание файла .flake8](#title16) / 
-[17. Описание файла mypy.ini](#title17) / 
-[18. Описание директории Data](#title18) / 
+[13. Локальная установка проекта](#title13) / 
+[14. Установка и запуск проекта на сервере](#title14) / 
+[15. Получение ключей .env](#title15) / 
+[16. Получение ключей .env.docker](#title16) / 
+[17. Описание файла .flake8](#title17) / 
+[18. Описание файла mypy.ini](#title18) / 
+[19. Описание директории Data](#title19) / 
 
 
 
@@ -640,14 +641,14 @@ mailing_scheduler.add_jobstore(DjangoJobStore(), "default")
 
 
 
-# <a id="title13">13. Установка проекта</a>
+# <a id="title13">13. Локальная установка проекта</a>
 
 1. Клонируйте репозиторий:
-   ```
+   ```commandline
    git clone https://github.com/MaksimLakovich/Coursework-4-Mailing-management-service.git
    ```
 2. Установите зависимости:
-   ```
+   ```commandline
    poetry install
    ```
 3. Заполните файл `.env` по примеру `.env.example`
@@ -655,7 +656,37 @@ mailing_scheduler.add_jobstore(DjangoJobStore(), "default")
 
 
 
-# <a id="title14">14. Получение ключей. Описание файла .env.example</a> 
+# <a id="title14">14. Установка и запуск проекта на сервере (через Docker и Nginx)</a>
+
+1. Клонируйте репозиторий:
+    ```commandline
+    git clone https://github.com/MaksimLakovich/Coursework-4-Mailing-management-service.git
+    cd Coursework-4-Mailing-management-service
+    ```
+
+2. Создайте файл окружения ***.env.docker*** (на основе примера *.env.docker.example*) и заполните его реальными данными:
+    ```commandline
+    cp .env.docker.example .env.docker
+    nano .env.docker
+    ```
+   
+3. Соберите и запустите контейнеры:
+    ```commandline
+    docker-compose up -d --build
+    ```
+   
+4. Выполните миграции и соберите статику (если они ещё не применялись):
+    ```commandline
+    docker-compose exec web python manage.py migrate
+    docker-compose exec web python manage.py collectstatic --noinput
+    ```
+   
+5. После успешного запуска приложение будет доступно по IP-адресу вашей ВМ на порту 80: `http://<ваш-ip>`
+
+
+
+
+# <a id="title15">15. Получение ключей. Описание файла .env.example</a> 
 
 1. Создайте файл .env в корне проекта из копии подготовленного файла `.env.example`, в котором описаны названия всех переменных, необходимых для работы приложения.
 2. Замените значения переменных реальными данными.
@@ -692,7 +723,7 @@ REDIS_URL=
 
 
 
-# <a id="title15">15. Получение ключей для запуска через DOCKER. Описание файла .env.docker.example</a> 
+# <a id="title16">16. Получение ключей для запуска через DOCKER. Описание файла .env.docker.example</a> 
 1. Создайте файл .env.docker в корне проекта из копии подготовленного файла `.env.docker.example`, в котором описаны названия всех переменных, необходимых для работы приложения.
 2. Замените значения переменных реальными данными.
 3. В модуле `settings.py` существует секретный ключ `SECRET_KEY`, который рекомендуется в целях безопасности хранить в тайне:
@@ -703,7 +734,7 @@ REDIS_URL=
 
 
 
-# <a id="title16">16. Описание файла .flake8</a> 
+# <a id="title17">17. Описание файла .flake8</a> 
 
 ```ini
 [flake8]
@@ -715,7 +746,7 @@ exclude = .git, __pycache__, venv, .venv
 
 
 
-# <a id="title17">17. Описание файла mypy.ini</a> 
+# <a id="title18">18. Описание файла mypy.ini</a> 
 
 ```ini
 [mypy]
@@ -725,7 +756,7 @@ ignore_missing_imports = True
 
 
 
-# <a id="title18">18. Описание директории data/</a> 
+# <a id="title19">19. Описание директории data/</a> 
 
 - Папка ***data/fixtures/***:
 
