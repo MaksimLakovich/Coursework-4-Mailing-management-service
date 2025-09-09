@@ -1,5 +1,5 @@
 # Базовый образ Python
-FROM python:3.12-slim
+FROM python:3.13-slim
 
 # Классический паттерн установки системных зависимостей:
 # 1) apt-get update → обновляет список пакетов (как apt update в Ubuntu).
