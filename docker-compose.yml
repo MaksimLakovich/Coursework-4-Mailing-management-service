@@ -1,0 +1,74 @@
+# Указываем версию формата файла docker-compose, а не версию Python.
+# Она определяет какие возможности YAML доступны (например, поддержка depends_on, healthcheck, profiles и т.д.).
+# Версия 3.9 - наиболее стабильная версия схемы Compose.
+# Сейчас вообще можно не указывать version, потому что новый Docker Compose (v2) сам подбирает нужный формат.
+version: "3.9"
+
+# Описываем сервисы (контейнеры), которые нужны для проекта. Список сервисов = контейнеров (каждый блок под ним = отдельный контейнер).
+services:
+
+  # Django-приложение
+  web:
+    build: .                          # Собираем образ из Dockerfile в корне проекта. Можно вместо этой строки указать "image: mailing_service_project" (использовать уже готовый образ, который ранее собрали руками с помощью "docker build -t my-django-app ."). Или можно как тут указать build: . (тогда compose сам вызовет docker build и соберёт образ по твоему Dockerfile).
+    container_name: mailing_service_web        # Имя контейнера (для удобства)
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000"  # Миграция и запуск приложения
+
+    volumes:
+      - .:/mailing_service_project            # Монтируем локальный проект внутрь контейнера
+      - media_data:/mailing_service_project/media  # Отдельный том для медиафайлов (чтобы они не терялись при пересборке)
+      - static_volume:/mailing_service_project/staticfiles  # Отдельный том для статики
+    ports:
+      - "8000:8000"                   # Пробрасываем порт (localhost:8000 → контейнер:8000)
+    env_file:
+      - .env.docker                   # Загружаем переменные окружения из .env.docker (.env используется для локального запуска - специально разделил)
+    depends_on:
+      - db                            # Запускаем только после старта Postgres
+      - redis                         # И после Redis
+    restart: always                   # Перезапускаем контейнер если упал
+
+  # Nginx
+  nginx:
+    build:                                                    # Собираем образ для Nginx
+      context: ./nginx                                        # Контекст сборки = папка nginx (там Dockerfile + конфиг)
+    ports:
+      - "80:80"                                               # Пробрасываем порт 80 (HTTP) наружу
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf              # Монтируем наш конфиг внутрь контейнера
+      - static_volume:/mailing_service_project/staticfiles    # Том для статики, чтобы nginx видел собранные файлы
+    depends_on:
+      - web                                                   # Запускаем nginx только после Django
+
+  # PostgreSQL база данных
+  db:
+    image: postgres:16                # Используем готовый официальный образ Postgres
+    container_name: mailing_service_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Данные хранятся в отдельном томе
+    env_file:
+      - .env.docker                   # Подтягиваем переменные окружения из .env.docker (.env используется для локального запуска - специально разделил)
+    environment:                      # Можно дополнительно задать явно (перестраховка)
+      POSTGRES_DB: ${DATABASE_SKYSTORE}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "5433:5432"                   # Делаем доступным Postgres на localhost:5432
+    restart: always
+
+  # Redis
+  redis:
+    image: redis:7                    # Берём официальный Redis
+    container_name: mailing_service_redis
+    volumes:
+      - redis_data:/data              # Том для хранения данных Redis (иначе всё потеряется при пересборке)
+    env_file:
+      - .env.docker
+    ports:
+      - "6380:6379"                   # Открываем порт (для дебага)
+    restart: always
+
+# Определяем именованные тома (для хранения данных вне контейнера)
+volumes:
+  postgres_data:    # для БД Postgres
+  media_data:       # для медиафайлов Django (загруженные пользователями картинки/файлы)
+  static_volume:    # для собранных статических файлов (чтобы nginx их видел)
+  redis_data:       # для Redis (заменил redis_volume на redis_data ради единообразия)

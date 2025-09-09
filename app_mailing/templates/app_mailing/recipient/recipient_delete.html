@@ -1,0 +1,33 @@
+{% extends 'app_mailing/base.html' %}
+
+{% block title %}Удаление получателя{% endblock %}
+
+{% block content %}
+
+<!-- Заголовок страницы -->
+<div class="text-center my-5">
+    <h2 class="fw-bold">Подтверждение удаления получателя:</h2>
+    <h4 class="text-danger">ФИО: <strong>{{ recipient.full_name }}</strong> (почта: <strong>{{ recipient.email }}</strong>)</h4>
+</div>
+
+<div class="container">
+    <div class="row text-start">
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <div class="card-body mt-4">
+                <h4>Вы действительно хотите удалить этого получателя из рассылок?</h4>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+
+                    <!-- Кнопки -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-danger mt-4 me-2">Удалить</button>
+                        <a href="{% url 'app_mailing:recipient_list_page' %}" class="btn btn-outline-primary mt-4">Назад</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,3 +1,35 @@
 from django.contrib import admin
 
-# Register your models here.
+from app_mailing.models import Attempt, Mailing, Message, Recipient
+
+
+@admin.register(Recipient)
+class RecipientAdmin(admin.ModelAdmin):
+    """Настройка отображения данных "Получатель рассылки" в админке (модель *Recipient*)."""
+    list_display = ("id", "email", "full_name", "comment", "owner",)
+    list_filter = ("email", "full_name", "owner",)
+    search_fields = ("email", "full_name", "owner__email",)
+
+
+@admin.register(Message)
+class MessageAdmin(admin.ModelAdmin):
+    """Настройка отображения данных "Сообщение рассылки" в админке (модель *Message*)."""
+    list_display = ("id", "message_subject", "message_body", "owner",)
+    list_filter = ("message_subject", "owner",)
+    search_fields = ("message_subject", "message_body", "owner__email",)
+
+
+@admin.register(Mailing)
+class MailingAdmin(admin.ModelAdmin):
+    """Настройка отображения данных "Рассылка" в админке (модель *Mailing*)."""
+    list_display = ("id", "first_message_sending", "end_message_sending", "status", "message", "owner",)
+    list_filter = ("first_message_sending", "end_message_sending", "status", "message", "owner",)
+    search_fields = ("first_message_sending", "end_message_sending", "status", "message", "owner__email",)
+
+
+@admin.register(Attempt)
+class AttemptAdmin(admin.ModelAdmin):
+    """Настройка отображения данных "Попытки рассылки" в админке (модель *Attempt*)."""
+    list_display = ("id", "attempt_time", "status", "server_response", "mailing", "recipient", "owner",)
+    list_filter = ("attempt_time", "status", "server_response", "mailing", "recipient", "owner",)
+    search_fields = ("attempt_time", "status", "server_response", "mailing", "recipient", "owner__email",)

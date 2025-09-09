@@ -1,0 +1,135 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}MailForge{% endblock %}</title>
+
+    <!-- Подключение статичеcких файлов со стилями Bootstrap -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        /* СДЕЛАТЬ ЖИРНЫМ ШРИФТ в названии полей на формах из FORMS.PY */
+        form p label {
+            font-weight: bold;
+            }
+
+        /* СТИЛИЗАЦИЯ ПОЛЕЙ ФОРМ - делает текст "placeholder" прозрачней до 70% */
+        .text-muted-secondary::placeholder {
+            opacity: 0.3;
+            }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- Подключение всплывающего уведомления для пользователя с благодарностью при отправке различных форм -->
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+<script>
+    // Автоматическое скрытие сообщений через 5 секунд
+    setTimeout(function() {
+      var alerts = document.querySelectorAll('.alert');
+      alerts.forEach(function(alert) {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500); // Удалить элемент через 0.5 секунды после скрытия
+      });
+    }, 5000); // Через 5 секунд
+</script>
+{% endif %}
+
+<!-- Подключение подшаблона с меню (верхняя часть с навигацией) -->
+{% include 'app_mailing/menu.html' %}
+
+<!-- Подключение основного контента страницы -->
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- Нижняя часть с футером (подвал) -->
+<footer>
+    <div class="container border-top pt-4 my-md-5 pt-md-5 border-top">
+        <div class="row">
+            <div class="col-12 col-md">
+                MailForge
+                <small class="d-block mb-3 text-muted">&copy; 2025</small>
+            </div>
+            <div class="col-6 col-md">
+                <h5>Категории</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="#">Телеграм боты</a></li>
+                    <li><a class="text-muted" href="#">Полезные утилиты</a></li>
+                    <li><a class="text-muted" href="#">Микросервисы</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md">
+                <h5>Дополнительно</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="#">Мы пишем</a></li>
+                </ul>
+            </div>
+            <div class="col-6 col-md">
+                <h5>О нас</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="#">Контакты</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Подключение статичеcких файлов со скриптами Bootstrap -->
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+<!-- Инициализирование tooltip, чтоб для Получателей отображалось "количество" и "тултип с ФИО" (при наведении отображаю ФИО получателей) -->
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {new bootstrap.Tooltip(tooltipTriggerEl)})
+</script>
+
+<!-- Инициализирование popover, чтоб для Получателей отображалось "количество" и "тултип с ФИО" (при наведении отображаю ФИО получателей) -->
+<script>
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    popoverTriggerList.forEach(function (popoverTriggerEl) {new bootstrap.Popover(popoverTriggerEl)})
+</script>
+
+
+<!--Bootstrap Dual Listbox — это готовый jQuery-плагин с поддержкой Bootstrap-стилей. Он превращает обычное <select multiple> поле в 2 колонки: слева — доступные, справа — выбранные.-->
+<!-- Bootstrap Dual Listbox CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap4-duallistbox/dist/bootstrap-duallistbox.min.css">
+<!-- jQuery (если еще не подключен) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap Dual Listbox JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap4-duallistbox/dist/jquery.bootstrap-duallistbox.min.js"></script>
+<!-- Инициализация Bootstrap Dual Listbox -->
+<script>
+    $(document).ready(function () {
+      $('.duallistbox').bootstrapDualListbox({
+        nonSelectedListLabel: 'Все получатели',
+        selectedListLabel: 'Выбранные получатели',
+        preserveSelectionOnMove: 'moved',
+        moveOnSelect: false,
+        filterPlaceHolder: 'Поиск...',
+        infoText: 'Показано {0}',
+        infoTextEmpty: 'Нет получателей',
+        infoTextFiltered: '<span class="label label-warning">Фильтр:</span> {0} из {1}',
+        selectorMinimalHeight: 200
+      });
+    });
+</script>
+
+
+</body>
+
+</html>

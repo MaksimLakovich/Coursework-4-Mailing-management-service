@@ -1,0 +1,122 @@
+[
+  {
+    "model": "app_mailing.mailing",
+    "pk": 1,
+    "fields": {
+      "first_message_sending": null,
+      "end_message_sending": null,
+      "status": "created",
+      "message": 1,
+      "recipients": [],
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.mailing",
+    "pk": 2,
+    "fields": {
+      "first_message_sending": null,
+      "end_message_sending": null,
+      "status": "created",
+      "message": 2,
+      "recipients": [],
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.mailing",
+    "pk": 3,
+    "fields": {
+      "first_message_sending": null,
+      "end_message_sending": null,
+      "status": "created",
+      "message": 3,
+      "recipients": [],
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.mailing",
+    "pk": 4,
+    "fields": {
+      "first_message_sending": null,
+      "end_message_sending": null,
+      "status": "created",
+      "message": 4,
+      "recipients": [],
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.mailing",
+    "pk": 5,
+    "fields": {
+      "first_message_sending": "2025-04-05T08:00:00Z",
+      "end_message_sending": null,
+      "status": "launched",
+      "message": 5,
+      "recipients": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.mailing",
+    "pk": 6,
+    "fields": {
+      "first_message_sending": "2025-04-06T08:00:00Z",
+      "end_message_sending": null,
+      "status": "launched",
+      "message": 1,
+      "recipients": [11, 12, 13, 14, 15],
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.mailing",
+    "pk": 7,
+    "fields": {
+      "first_message_sending": "2025-04-07T08:00:00Z",
+      "end_message_sending": null,
+      "status": "launched",
+      "message": 2,
+      "recipients": [16, 17, 18, 19, 20],
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.mailing",
+    "pk": 8,
+    "fields": {
+      "first_message_sending": "2025-04-08T08:00:00Z",
+      "end_message_sending": "2025-04-08T08:30:00Z",
+      "status": "accomplished",
+      "message": 3,
+      "recipients": [1, 6, 11, 16],
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.mailing",
+    "pk": 9,
+    "fields": {
+      "first_message_sending": "2025-04-09T08:00:00Z",
+      "end_message_sending": "2025-04-09T08:30:00Z",
+      "status": "accomplished",
+      "message": 4,
+      "recipients": [2, 7, 12, 17],
+      "owner": 14
+    }
+  },
+  {
+    "model": "app_mailing.mailing",
+    "pk": 10,
+    "fields": {
+      "first_message_sending": "2025-04-10T08:00:00Z",
+      "end_message_sending": null,
+      "status": "launched",
+      "message": 5,
+      "recipients": [3, 8, 13, 18],
+      "owner": 14
+    }
+  }
+]
