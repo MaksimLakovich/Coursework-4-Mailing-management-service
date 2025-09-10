@@ -1,15 +1,19 @@
 # Базовый образ Python
-FROM python:3.13-slim
+FROM python:3.12-slim
 
-# Классический паттерн установки системных зависимостей:
+
+# Классический паттерн установки netcat и системные зависимости:
 # 1) apt-get update → обновляет список пакетов (как apt update в Ubuntu).
 # 2) apt-get install -y ... → устанавливает системные пакеты (-y == отвечать "ДА" на всё):
+# netcat-traditional - в образе python:3.12-slim нет утилиты nc (netcat), а без нее не сработает entrypoint.sh,
+# поэтому устанавливаю netcat в образ
 # build-essential - компилятор C (для установки некоторых пакетов).
 # libpq-dev - заголовки и библиотеки PostgreSQL (нужны psycopg2)
 # libjpeg-dev - для pillow (работа с изображениями)
 # zlib1g-dev - для pillow (PNG/JPEG и т.п.)
 # 3) rm -rf /var/lib/apt/lists/* → чистим кэш apt, иначе образ будет на сотни МБ тяжелее.
 RUN apt-get update && apt-get install -y \
+    netcat-traditional \
     build-essential \
     libpq-dev \
     libjpeg-dev \
