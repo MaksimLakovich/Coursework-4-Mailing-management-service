@@ -11,7 +11,8 @@ services:
   web:
     build: .                          # Собираем образ из Dockerfile в корне проекта. Можно вместо этой строки указать "image: mailing_service_project" (использовать уже готовый образ, который ранее собрали руками с помощью "docker build -t my-django-app ."). Или можно как тут указать build: . (тогда compose сам вызовет docker build и соберёт образ по твоему Dockerfile).
     container_name: mailing_service_web        # Имя контейнера (для удобства)
-    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000"  # Миграция и запуск приложения
+    command: sh /mailing_service_project/entrypoint.sh
+#    command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000"  # Миграция и запуск приложения
 
     volumes:
       - .:/mailing_service_project            # Монтируем локальный проект внутрь контейнера
@@ -46,10 +47,6 @@ services:
       - postgres_data:/var/lib/postgresql/data  # Данные хранятся в отдельном томе
     env_file:
       - .env.docker                   # Подтягиваем переменные окружения из .env.docker (.env используется для локального запуска - специально разделил)
-    environment:                      # Можно дополнительно задать явно (перестраховка)
-      POSTGRES_DB: ${DATABASE_SKYSTORE}
-      POSTGRES_USER: ${DATABASE_USER}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
       - "5433:5432"                   # Делаем доступным Postgres на localhost:5432
     restart: always
