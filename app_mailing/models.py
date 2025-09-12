@@ -29,7 +29,8 @@ class Recipient(models.Model):
         null=True,  # Разрешаем пустые значения в БД
         blank=True,  # Разрешаем пустое поле в формах
         default=None,  # По умолчанию None
-        # Динамически подставляю текущую user модель, чего не делает такой простой вариант как "to=users.models.UserCustomer".
+        # Динамически подставляю текущую user модель, чего не делает такой простой вариант как
+        # "to=users.models.UserCustomer".
         # Если мы когда-нибудь изменим AUTH_USER_MODEL в settings.py, модель Recipient автоматически обновится.
         to=settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

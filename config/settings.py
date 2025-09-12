@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -85,6 +86,16 @@ DATABASES = {
         'PORT': os.getenv('DATABASE_PORT', default='5432'),
     }
 }
+
+# База данных для тестов при разворачивании приложения (чтоб не разворачивать сразу postgresql достаточно в начале
+# для тестов развернуть sqlite
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'test_db.sqlite3',
+        }
+    }
 
 
 # Password validation
