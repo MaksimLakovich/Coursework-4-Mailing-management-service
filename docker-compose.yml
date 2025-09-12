@@ -9,7 +9,7 @@ services:
 
   # Django-приложение
   web:
-#    build: .                          # Собираем образ из Dockerfile в корне проекта. Можно вместо этой строки указать "image: mailing_service_project" (использовать уже готовый образ, который ранее собрали руками с помощью "docker build -t my-django-app ."). Или можно как тут указать build: . (тогда compose сам вызовет docker build и соберёт образ по твоему Dockerfile).
+#    build: .    # Собираем образ из Dockerfile в корне проекта. Можно вместо этой строки указать "image: mailing_service_project" (использовать уже готовый образ, который ранее собрали руками с помощью "docker build -t my-django-app ."). Или можно как тут указать build: . (тогда compose сам вызовет docker build и соберёт образ по твоему Dockerfile).
     image: ${DOCKER_HUB_USERNAME}/mailing_service:latest
     container_name: mailing_service_web        # Имя контейнера (для удобства)
     command: sh /mailing_service_project/entrypoint.sh
