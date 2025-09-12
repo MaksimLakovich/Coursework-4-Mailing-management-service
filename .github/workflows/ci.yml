@@ -1,9 +1,9 @@
 name: Django CI for Mailing_management_service
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - main         # деплой только при пуше (т.е. после merge) в main
 
 jobs:
 
