@@ -64,6 +64,14 @@ jobs:
       - name: Push Docker image to Docker Hub  # загрузка собранного Docker-образа в Docker Hub, чтобы его можно было использовать для деплоя на сервер
         run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }}
 
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }} -t ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:latest .
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:latest
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
@@ -74,11 +82,30 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      - name: Deploy to Server  # выполняет деплой на удаленный сервер: извлекает новый Docker-образ, останавливает старый контейнер, если он существует, и развертывает новый контейнер на основе обновленного образа
+#      - name: Deploy to Server  # выполняет деплой на удаленный сервер: извлекает новый Docker-образ, останавливает старый контейнер, если он существует, и развертывает новый контейнер на основе обновленного образа
+#        run: |
+#          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+#            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }}
+#            docker stop mailing_service || true
+#            docker rm mailing_service || true
+#            docker run -d --name mailing_service -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }}
+#          EOF
+
+      - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }}
-            docker stop mailing_service || true
-            docker rm mailing_service || true
-            docker run -d --name mailing_service -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }}
+            # Переходим в папку проекта
+            cd /var/www/mailing_service/Coursework-4-Mailing-management-service
+            
+            # Подтягиваем свежие изменения из GitHub (docker-compose.yml, env и т.д.)
+            git pull origin main
+  
+            # Тянем новый образ web (который собрал и запушил CI)
+            docker compose pull web
+  
+            # Перезапускаем только web-контейнер с новым образом
+            docker compose up -d --force-recreate web
+  
+            # Чистим старые dangling-образы, чтобы не засорялся сервер
+            docker image prune -f
           EOF
