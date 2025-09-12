@@ -729,7 +729,30 @@ REDIS_URL=
 3. В модуле `settings.py` существует секретный ключ `SECRET_KEY`, который рекомендуется в целях безопасности хранить в тайне:
 4. Файл .env.docker должен содержать данные:
 ```dotenv
+# Настройки секретного ключа проекта django в config/settings.py
+#Django рекомендует в целях безопасности хранить секретный ключ, используемый в продакшене, в тайне!
+SECRET_KEY_FOR_PROJECT=secret_key_here
 
+# Настройки дебага. В settings.py дебаг должен быть описан так: DEBUG = True if os.getenv('DEBUG') == 'True' else False
+DEBUG=
+
+# Настройки БД проекта django в config/settings.py
+DATABASE_NAME=
+DATABASE_USER=
+DATABASE_PASSWORD=
+DATABASE_HOST=db
+DATABASE_PORT=
+
+# Настройка SMTP-сервера Яндекса для отправки писем пользователям:
+YANDEX_EMAIL_HOST_USER=
+YANDEX_EMAIL_HOST_PASSWORD=password_here
+
+# Данные почты и устанавливаемого пароля для создания Администратора с помощью кастомной команды
+ADMIN_EMAIL=set_your_email_here
+ADMIN_PASSWORD=set_your_password_here
+
+# Данные Redis-сервера и используемого порта для запуска через Docker
+REDIS_URL=redis://redis:6379/1
 ```
 
 
@@ -740,7 +763,7 @@ REDIS_URL=
 [flake8]
 max-line-length = 119
 ignore = E203, W503
-exclude = .git, __pycache__, venv, .venv
+exclude = .git, __pycache__, venv, .venv, */migrations/*,
 ```
 
 

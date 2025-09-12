@@ -1,0 +1,111 @@
+name: Django CI for Mailing_management_service
+
+on: [push, pull_request]
+
+jobs:
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code  # клонирование репозитория с использованием action actions/checkout@v3
+      uses: actions/checkout@v3
+
+    - name: Set up Python  # установка Python версии 3.12 с использованием action actions/setup-python@v4
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies  # обновление pip + тут для flake8 достаточно pip install flake8. Но для тестового шага - нужно использовать poetry install, а не pip (иначе придётся вручную устанавливать все зависимости)
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8
+
+    - name: Run Flake8  # запуск Flake8
+      run: flake8 .
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Check out code  # клонирование репозитория с использованием action actions/checkout@v3
+        uses: actions/checkout@v3
+
+      - name: Set up Python  # установка Python версии 3.12 с использованием action actions/setup-python@v4
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies  # установка зависимостей через poetry из pyproject.toml + обновляет pip
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false
+          poetry install --no-root
+
+      - name: Run tests with SQLite  # запуск тестов проекта с использованием команды python manage.py test. Перед этим migrate не нужен, test сам создаст тестовую БД и применит миграции
+        run: python manage.py test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub  # аутентификация в Docker Hub с использованием секретов. Это необходимо для загрузки собранного образа в ваш Docker Hub-аккаунт
+        run: echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+      - name: Build Docker image  # сборка Docker-образа из Dockerfile. Тег образа включает хеш коммита (${{ github.sha }}), что позволяет отслеживать версии образов
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }} .
+
+      - name: Push Docker image to Docker Hub  # загрузка собранного Docker-образа в Docker Hub, чтобы его можно было использовать для деплоя на сервер
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }}
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }} -t ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:latest .
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Set up SSH  # настройка SSH-подключения с использованием приватного ключа из GitHub Secrets
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+#      - name: Deploy to Server  # выполняет деплой на удаленный сервер: извлекает новый Docker-образ, останавливает старый контейнер, если он существует, и развертывает новый контейнер на основе обновленного образа
+#        run: |
+#          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+#            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }}
+#            docker stop mailing_service || true
+#            docker rm mailing_service || true
+#            docker run -d --name mailing_service -p 80:8000 ${{ secrets.DOCKER_HUB_USERNAME }}/mailing_service:${{ github.sha }}
+#          EOF
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            # Переходим в папку проекта
+            cd /var/www/mailing_service/Coursework-4-Mailing-management-service
+            
+            # Подтягиваем свежие изменения из GitHub (docker-compose.yml, env и т.д.)
+            git pull origin main
+  
+            # Тянем новый образ web (который собрал и запушил CI)
+            docker compose pull web
+  
+            # Перезапускаем только web-контейнер с новым образом
+            docker compose up -d --force-recreate web
+  
+            # Чистим старые dangling-образы, чтобы не засорялся сервер
+            docker image prune -f
+          EOF

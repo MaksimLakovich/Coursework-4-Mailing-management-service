@@ -371,7 +371,7 @@ class MailingListView(LoginRequiredMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         """Добавление в контекст шаблона текущую дату и время, чтобы потом
-        использовать её в *min="{{now|date:'Y-m-d\TH:i'}}"* в шаблоне *mailing_list.html*"""
+        использовать её в *min="{{now|date:'Y-m-d/TH:i'}}"* в шаблоне *mailing_list.html*"""
         context = super().get_context_data(**kwargs)
         context["now"] = timezone.now()  # добавлено: текущая дата и время
         return context
