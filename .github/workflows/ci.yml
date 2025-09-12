@@ -1,8 +1,9 @@
 name: Django CI for Mailing_management_service
 
 on:
-  branches:
-    - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
 
