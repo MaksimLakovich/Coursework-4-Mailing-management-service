@@ -70,7 +70,7 @@ jobs:
 
     steps:
       - name: Set up SSH  # настройка SSH-подключения с использованием приватного ключа из GitHub Secrets
-        uses: webfactory/ssh-agent@v0.5
+        uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
