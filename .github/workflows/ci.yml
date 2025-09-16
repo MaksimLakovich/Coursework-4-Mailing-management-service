@@ -108,6 +108,9 @@ jobs:
   
             # Перезапускаем только web-контейнер с новым образом
             docker compose up -d --force-recreate web
+          
+            # Чистим Redis (сбрасываем кэш)
+            docker compose exec -T redis redis-cli FLUSHALL || true
   
             # Чистим старые dangling-образы, чтобы не засорялся сервер
             docker image prune -f
