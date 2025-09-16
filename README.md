@@ -763,10 +763,17 @@ SECRET_KEY_FOR_PROJECT=secret_key_here
 # Настройки дебага. В settings.py дебаг должен быть описан так: DEBUG = True if os.getenv('DEBUG') == 'True' else False
 DEBUG=
 
-# Настройки БД проекта django в config/settings.py
-DATABASE_NAME=
-DATABASE_USER=
-DATABASE_PASSWORD=
+# Настройки БД (ВАЖНО!!! В Docker DATABASE_HOST = db)
+# Название базы для приложения:
+# 1) Postgres (для контейнера db)
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+
+# 2) Django (чтобы settings.py подхватывал те же значения)
+DATABASE_NAME="${POSTGRES_DB}"
+DATABASE_USER="${POSTGRES_USER}"
+DATABASE_PASSWORD="${POSTGRES_PASSWORD}"
 DATABASE_HOST=db
 DATABASE_PORT=
 
