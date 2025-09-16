@@ -104,13 +104,10 @@ jobs:
             git pull origin main
   
             # Тянем новый образ web (который собрал и запушил CI)
-            docker compose pull web
+            docker compose --env-file .env.docker pull web
   
             # Перезапускаем только web-контейнер с новым образом
-            docker compose up -d --force-recreate web
-          
-            # Чистим Redis (сбрасываем кэш)
-            docker compose exec -T redis redis-cli FLUSHALL || true
+            docker compose --env-file .env.docker up -d --force-recreate web
   
             # Чистим старые dangling-образы, чтобы не засорялся сервер
             docker image prune -f
